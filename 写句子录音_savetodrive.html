@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentence_Write_Recording</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 850px; margin: 40px auto; background: #f0f2f5; color: #333; }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #1a73e8; margin-bottom: 20px; }
+        
+        .field-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 0.9em; }
+        
+        input[type="text"], textarea { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; 
+            border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+        }
+        .speaker-box { background-color: #e8f0fe; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #1a73e8; }
+        
+        #recordingInterface { display: none; margin-top: 20px; }
+        .target-lang { height: 80px; font-size: 1.2rem; border-left: 5px solid #1a73e8; resize: none; }
+        .gloss-lang { height: 60px; font-family: monospace; background: #fafafa; }
+        .trans-lang { height: 60px; font-style: italic; }
+
+        .btn-group { display: flex; gap: 20px; margin-top: 25px; justify-content: center; }
+        button { padding: 15px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+
+        #startSessionBtn { background: #1a73e8; color: white; width: 100%; }
+        #recBtn { background: #ea4335; color: white; min-width: 200px; }
+        #recBtn.active { background: #c5221f; animation: pulse 1.5s infinite; }
+        #recBtn:disabled { background: #ccc !important; color: #888; cursor: not-allowed; border: 1px solid #bbb; }
+
+        #nextBtn { background: #1a73e8; color: white; }
+        #nextBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
+        #doneScreen { display: none; padding: 40px 20px; }
+        .done-text { font-size: 2.2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="mainTitle">Sentence_Write_Recording</h1>
+    
+    <div id="setupInterface" class="speaker-box">
+        <div class="field-group">
+            <label>Speaker Name</label>
+            <input type="text" id="speakerName" placeholder="Enter Name...">
+        </div>
+        <button id="startSessionBtn">Start Session</button>
+    </div>
+
+    <div id="recordingInterface">
+        <div style="margin-bottom: 20px;">Speaker: <b id="displayName"></b> | Progress: <b id="count">0</b> / 5</div>
+
+        <div class="field-group">
+            <label>Target Language</label>
+            <textarea id="targetInput" class="target-lang"></textarea>
+        </div>
+        <div class="field-group">
+            <label>Gloss</label>
+            <textarea id="glossInput" class="gloss-lang"></textarea>
+        </div>
+        <div class="field-group">
+            <label>Translation</label>
+            <textarea id="transInput" class="trans-lang"></textarea>
+        </div>
+
+        <div class="btn-group">
+            <button id="recBtn">Start Recording</button>
+            <button id="nextBtn" disabled>Save & Next</button>
+        </div>
+        <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
+            ⚠ You must click "Save & Next" before recording the next sentence.
+        </p>
+    </div>
+
+    <div id="doneScreen">
+        <div class="done-text">ALL DONE! / 完成！</div>
+        <p>1. Your recordings were downloaded as a ZIP file.</p>
+        <p>2. The OneDrive upload page has opened in a new tab.</p>
+        
+        <div class="upload-box">
+            <strong>Next Step:</strong> Please select the ZIP file from your <b>Downloads</b> folder and upload it to the OneDrive window.
+            <br><br>
+            <strong>下一步：</strong> 请从您的“下载”文件夹中选择 ZIP 文件并将其上传到 OneDrive 窗口。
+        </div>
+
+        <button id="manualUploadBtn" style="background: #1a73e8; color: white;">Re-open Upload Page / 重新打开上传页面</button>
+        <br>
+        <button onclick="location.reload()" style="background:#eee; margin-top: 20px; font-size: 0.8em;">Start New Session</button>
+    </div>
+</div>
+
+<script>
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgDg3753pVOyRpn8p17GGUYFAQ59CzAJRTGFzUMoIKz4_c0";
+
+    let audioContext, stream, processor, input, audioData = [], sessionData = [];
+    let currentSpeaker = "";
+    const sampleRate = 16000;
+
+    const setupUI = document.getElementById('setupInterface');
+    const recordingUI = document.getElementById('recordingInterface');
+    const doneUI = document.getElementById('doneScreen');
+    const recBtn = document.getElementById('recBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const hintMsg = document.getElementById('hintMsg');
+
+    // Helper to get YYYY-MM-DD
+    function getFormattedDate() {
+        const d = new Date();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${year}-${month}-${day}`;
+    }
+
+    document.getElementById('startSessionBtn').onclick = () => {
+        const name = document.getElementById('speakerName').value.trim();
+        if (!name) return alert("Please enter a name.");
+        currentSpeaker = name.replace(/\s+/g, '_');
+        document.getElementById('displayName').textContent = currentSpeaker;
+        setupUI.style.display = "none";
+        recordingUI.style.display = "block";
+    };
+
+    recBtn.onclick = async () => {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+
+        if (recBtn.textContent === "Start Recording") {
+            audioData = [];
+            input = audioContext.createMediaStreamSource(stream);
+            processor = audioContext.createScriptProcessor(4096, 1, 1);
+            processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+            input.connect(processor);
+            processor.connect(audioContext.destination);
+            recBtn.textContent = "Stop Recording";
+            recBtn.classList.add('active');
+            nextBtn.disabled = true;
+            hintMsg.style.display = "none";
+        } else {
+            processor.disconnect();
+            input.disconnect();
+            recBtn.textContent = "Start Recording";
+            recBtn.classList.remove('active');
+            recBtn.disabled = true;
+            nextBtn.disabled = false;
+            hintMsg.style.display = "block";
+        }
+    };
+
+    nextBtn.onclick = async () => {
+        const target = document.getElementById('targetInput').value.trim();
+        if (!target) return alert("Please type the sentence text.");
+
+        sessionData.push({
+            target: target,
+            gloss: document.getElementById('glossInput').value.trim(),
+            trans: document.getElementById('transInput').value.trim(),
+            wav: exportWAV(audioData)
+        });
+
+        document.getElementById('count').textContent = sessionData.length;
+        document.getElementById('targetInput').value = "";
+        document.getElementById('glossInput').value = "";
+        document.getElementById('transInput').value = "";
+        
+        recBtn.disabled = false;
+        nextBtn.disabled = true;
+        hintMsg.style.display = "none";
+
+        if (sessionData.length >= 5) {
+            handleFinalExport();
+        }
+    };
+
+    async function handleFinalExport() {
+        recordingUI.style.display = "none";
+        document.getElementById('mainTitle').style.display = "none";
+        doneUI.style.display = "block";
+
+        const dateStr = getFormattedDate();
+        const zip = new JSZip();
+        let tsv = "Speaker\tFile\tTarget\tGloss\tTranslation\n";
+        
+        sessionData.forEach((item, i) => {
+            const index = String(i + 1).padStart(3, '0');
+            // File naming: Speaker_Date_item001.wav
+            const fileName = `${currentSpeaker}_${dateStr}_item${index}`;
+            zip.file(`${fileName}.wav`, item.wav);
+            tsv += `${currentSpeaker}\t${fileName}.wav\t${item.target}\t${item.gloss}\t${item.trans}\n`;
+        });
+
+        // TSV naming: Metadata_Speaker_Date.tsv
+        zip.file(`Metadata_${currentSpeaker}_${dateStr}.tsv`, tsv);
+        const content = await zip.generateAsync({type:"blob"});
+        
+        // ZIP naming: Speaker_Date_Data.zip
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = `${currentSpeaker}_${dateStr}_Data.zip`;
+        link.click();
+
+        window.open(ONEDRIVE_LINK, '_blank');
+    }
+
+    document.getElementById('manualUploadBtn').onclick = () => {
+        window.open(ONEDRIVE_LINK, '_blank');
+    };
+
+    function exportWAV(bufferList) {
+        const buffer = flatten(bufferList);
+        const wav = new ArrayBuffer(44 + buffer.length * 2);
+        const view = new DataView(wav);
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 32 + buffer.length * 2, true);
+        writeString(view, 8, 'WAVE');
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeString(view, 36, 'data');
+        view.setUint32(40, buffer.length * 2, true);
+        let offset = 44;
+        for (let i = 0; i < buffer.length; i++, offset += 2) {
+            let s = Math.max(-1, Math.min(1, buffer[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+        return new Blob([view], { type: 'audio/wav' });
+    }
+    function flatten(list) {
+        let len = list.reduce((a, b) => a + b.length, 0);
+        let res = new Float32Array(len);
+        let off = 0;
+        for (let b of list) { res.set(b, off); off += b.length; }
+        return res;
+    }
+    function writeString(v, o, s) {
+        for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
+    }
+</script>
+</body>
+</html>
