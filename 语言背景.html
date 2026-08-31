@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>语言学研究被试背景调查</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, 'PingFang SC', sans-serif; 
+            max-width: 900px; margin: 40px auto; background: #f0f2f5; color: #333; padding: 0 20px;
+        }
+        .container { 
+            background: white; padding: 40px; border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; width: 100%;
+        }
+        h1 { color: #1a73e8; text-align: center; margin-bottom: 30px; }
+        .section-title { 
+            font-size: 1.1em; color: #1a73e8; margin: 25px 0 15px 0; 
+            font-weight: bold; border-left: 5px solid #1a73e8; padding-left: 10px; 
+        }
+        .field-group { margin-bottom: 20px; display: flex; flex-direction: column; text-align: left; }
+        label { font-weight: bold; margin-bottom: 8px; color: #555; font-size: 0.9em; }
+        label.required::after { content: " *"; color: #ea4335; }
+        
+        input, select, textarea { 
+            padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 1rem; box-sizing: border-box; width: 100%;
+        }
+        input:focus { border-color: #1a73e8; outline: none; }
+
+        .birthplace-row { display: flex; flex-wrap: wrap; gap: 15px; width: 100%; }
+        .birthplace-row .field-group { flex: 1 1 calc(24% - 15px); min-width: 160px; }
+
+        .list-item { 
+            display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; 
+            margin-bottom: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;
+        }
+
+        .proficiency-hint { font-size: 0.8em; color: #666; margin-bottom: 10px; background: #e8f0fe; padding: 10px; border-radius: 6px; line-height: 1.4; }
+
+        .submit-btn { 
+            background: #1a73e8; color: white; padding: 18px; border: none; 
+            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 30px; 
+        }
+        .submit-btn:hover { background: #1557b0; }
+
+        #doneScreen { display: none; text-align: center; padding: 40px 20px; }
+        .done-text { font-size: 2.2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; }
+        .btn-add { background: #34a853; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 5px; font-size: 0.85em;}
+        .btn-remove { background: #ea4335; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="formInterface">
+        <h1>Demographic Information</h1>
+        <form id="mainForm" onsubmit="handleSubmit(event)">
+            <div class="section-title">1. 基本信息 (Basic Info)</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">姓 (Surname)</label><input type="text" id="lastName" required></div>
+                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">名 (First Name)</label><input type="text" id="firstName" required></div>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 150px;"><label class="required">生日 (Birthday)</label><input type="date" id="birthday" required></div>
+                <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">身高 (Height cm)</label><input type="number" id="height" required></div>
+                <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">体重 (Weight kg)</label><input type="number" id="weight" required></div>
+            </div>
+
+            <div class="section-title">2. 出生地 (Birthplace)</div>
+            <div class="birthplace-row">
+                <div class="field-group"><label class="required">省/州</label><input type="text" id="bp_province" placeholder="如：四川省" required></div>
+                <div class="field-group"><label class="required">市/县</label><input type="text" id="bp_city" placeholder="如：凉山州西昌市" required></div>
+                <div class="field-group"><label class="required">乡/镇</label><input type="text" id="bp_town" placeholder="无请填无" required></div>
+                <div class="field-group"><label class="required">村/组</label><input type="text" id="bp_village" placeholder="无请填无" required></div>
+            </div>
+
+            <div class="section-title">3. 教育与职业</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 250px;">
+                    <label class="required">最高学历</label>
+                    <select id="education" required>
+                        <option value="">请选择...</option>
+                        <option value="小学">小学</option>
+                        <option value="初中">初中</option>
+                        <option value="高中">高中</option>
+                        <option value="中专">中专</option>
+                        <option value="大专">大专</option>
+                        <option value="本科">本科</option>
+                        <option value="研究生">研究生</option>
+                        <option value="博士">博士</option>
+                        <option value="其他">其他</option>
+                    </select>
+                    <input type="text" id="edu_other" placeholder="请详细说明其他学历..." style="display:none; margin-top:10px;">
+                </div>
+                <div class="field-group" style="flex: 1; min-width: 250px;"><label class="required">职业</label><input type="text" id="occupation" required></div>
+            </div>
+
+            <div class="section-title">4. 语言背景</div>
+            <div class="field-group">
+                <label class="required">第一语言 (L1)</label>
+                <input type="text" id="l1_lang" required>
+            </div>
+            <div class="field-group">
+                <label class="required">其他语言及其熟练度 (1-5)</label>
+                <div class="proficiency-hint">
+                    <b>熟练度说明：</b><br>
+                    1: 入门 (仅能简单问候) | 2: 基础 (能处理日常简单对话)<br>
+                    3: 熟练 (工作/生活沟通无障碍) | 4: 流利 (能进行深度讨论/创作)<br>
+                    5: 母语级 (完全等同于母语能力)
+                </div>
+                <div id="otherLangContainer"></div>
+                <button type="button" class="btn-add" onclick="addItem('otherLangContainer', '语言(无请填无)', '熟练度')">+ 添加语言</button>
+            </div>
+
+            <div class="section-title">5. 居住经历</div>
+            <div class="field-group">
+                <label class="required">其他长期居住过的城市及时间</label>
+                <div id="cityContainer"></div>
+                <button type="button" class="btn-add" onclick="addItem('cityContainer', '城市(无请填无)', '时长(如:3年;无请填无)')">+ 添加城市经历</button>
+            </div>
+
+            <button type="submit" class="submit-btn">完成并导出 (Complete & Export)</button>
+        </form>
+    </div>
+
+    <div id="doneScreen">
+        <div class="done-text">SUCCESS / 完成！</div>
+        <p>1. 数据已导出为宽格式 TSV 文件（首行为变量名）。</p>
+        <div class="upload-box">
+            <strong>Next Step:</strong> 请将下载的 <b>TSV文件</b> 上传至弹出窗口的 OneDrive。
+        </div>
+        <button onclick="window.open(ONEDRIVE_LINK, '_blank')" style="background: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">打开 OneDrive</button>
+    </div>
+</div>
+
+<script>
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgDg3753pVOyRpn8p17GGUYFAQ59CzAJRTGFzUMoIKz4_c0";
+
+    document.getElementById('education').addEventListener('change', function() {
+        const eduOther = document.getElementById('edu_other');
+        if (this.value === '其他') {
+            eduOther.style.display = 'block';
+            eduOther.required = true;
+        } else {
+            eduOther.style.display = 'none';
+            eduOther.required = false;
+        }
+    });
+
+    function addItem(containerId, p1, p2) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        const isLang = containerId === 'otherLangContainer';
+        div.innerHTML = `
+            <input type="text" placeholder="${p1}" class="item-name" required>
+            ${isLang ? `<select class="item-val" required>
+                <option value="1">1 (入门)</option><option value="2">2 (基础)</option>
+                <option value="3">3 (熟练)</option><option value="4">4 (流利)</option>
+                <option value="5">5 (母语级)</option>
+            </select>` : `<input type="text" placeholder="${p2}" class="item-val" required>`}
+            <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(div);
+    }
+
+    window.onload = () => {
+        addItem('otherLangContainer', '语言(无请填无)', '熟练度');
+        addItem('cityContainer', '城市(无请填无)', '时长(如:3年;无请填无)');
+    };
+
+    function handleSubmit(event) {
+        event.preventDefault();
+        const ln = document.getElementById('lastName').value.trim();
+        const fn = document.getElementById('firstName').value.trim();
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        const collectItems = (id) => {
+            let items = [];
+            document.querySelectorAll(`#${id} .list-item`).forEach(el => {
+                const name = el.querySelector('.item-name').value.trim();
+                const val = el.querySelector('.item-val').value.trim();
+                if(name) items.push(`${name}(${val})`);
+            });
+            return items.join("; ");
+        };
+
+        let eduFinal = document.getElementById('education').value;
+        if (eduFinal === '其他') {
+            eduFinal = "其他: " + document.getElementById('edu_other').value.trim();
+        }
+
+        const headers = ["LastName", "FirstName", "Birthday", "Height_cm", "Weight_kg", "Province", "City", "Town", "Village", "Education", "Occupation", "L1", "Other_Langs", "Other_Cities", "Submit_Date"];
+        const values = [
+            ln, fn, document.getElementById('birthday').value,
+            document.getElementById('height').value, document.getElementById('weight').value,
+            document.getElementById('bp_province').value, document.getElementById('bp_city').value,
+            document.getElementById('bp_town').value, document.getElementById('bp_village').value,
+            eduFinal,
+            document.getElementById('occupation').value, document.getElementById('l1_lang').value,
+            collectItems('otherLangContainer'), collectItems('cityContainer'), dateStr
+        ];
+
+        let tsvContent = headers.join("\t") + "\n" + values.join("\t");
+
+        const blob = new Blob(["\ufeff" + tsvContent], { type: 'text/tab-separated-values;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Demographics_${ln}_${fn}.tsv`;
+        link.click();
+
+        document.getElementById('formInterface').style.display = 'none';
+        document.getElementById('doneScreen').style.display = 'block';
+        window.open(ONEDRIVE_LINK, '_blank');
+    }
+</script>
+</body>
+</html>

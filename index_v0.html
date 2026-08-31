@@ -18,12 +18,6 @@
         }
         .speaker-box { background-color: #e8f0fe; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #1a73e8; }
         
-        /* Loudness Check UI Elements */
-        #micCheckInterface { display: none; background: #f8f9fa; border: 2px solid #e0e0e0; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .meter-container { background: #eee; width: 100%; height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; position: relative; }
-        #volumeBar { background: #34a853; width: 0%; height: 100%; transition: width 0.1s ease; }
-        #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
-        
         #recordingInterface { display: none; margin-top: 20px; }
         .target-lang { height: 80px; font-size: 1.2rem; border-left: 5px solid #1a73e8; resize: none; }
         .gloss-lang { height: 60px; font-family: monospace; background: #fafafa; }
@@ -33,8 +27,6 @@
         button { padding: 15px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
         #startSessionBtn { background: #1a73e8; color: white; width: 100%; }
-        #confirmMicBtn { background: #34a853; color: white; width: 100%; margin-top: 15px; }
-        #confirmMicBtn:disabled { background: #ccc; cursor: not-allowed; }
         #recBtn { background: #ea4335; color: white; min-width: 200px; }
         #recBtn.active { background: #c5221f; animation: pulse 1.5s infinite; }
         #recBtn:disabled { background: #ccc !important; color: #888; cursor: not-allowed; border: 1px solid #bbb; }
@@ -54,7 +46,6 @@
 <div class="container">
     <h1 id="mainTitle">Sentence_Write_Recording</h1>
     
-    <!-- Step 1: Speaker Info -->
     <div id="setupInterface" class="speaker-box">
         <div class="field-group">
             <label>Speaker Name</label>
@@ -63,23 +54,11 @@
         <button id="startSessionBtn">Start Session</button>
     </div>
 
-    <!-- Step 2: New Loudness/Mic Check Screen -->
-    <div id="micCheckInterface">
-        <h3>🎙 Audio Calibration & Loudness Check</h3>
-        <p style="font-size: 0.9em; color: #666;">Please speak normally to test your microphone levels before recording.</p>
-        <div class="meter-container">
-            <div id="volumeBar"></div>
-        </div>
-        <div id="volumeStatus">Status: Waiting for audio...</div>
-        <button id="confirmMicBtn" disabled>Proceed to Recording</button>
-    </div>
-
-    <!-- Step 3: Recording Interface -->
     <div id="recordingInterface">
         <div style="margin-bottom: 20px;">Speaker: <b id="displayName"></b> | Progress: <b id="count">0</b> / 5</div>
 
         <div class="field-group">
-            <label>Sentence</label>
+            <label>Target Language</label>
             <textarea id="targetInput" class="target-lang"></textarea>
         </div>
         <div class="field-group">
@@ -100,7 +79,6 @@
         </p>
     </div>
 
-    <!-- Step 4: Final Screen -->
     <div id="doneScreen">
         <div class="done-text">ALL DONE! / 完成！</div>
         <p>1. Your recordings were downloaded as a ZIP file.</p>
@@ -119,25 +97,20 @@
 </div>
 
 <script>
-    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgB2Icy_nb4bTZWvTrKqE0LVAQP0MLBD3ZfovgRKVhYxFNQ";
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgDg3753pVOyRpn8p17GGUYFAQ59CzAJRTGFzUMoIKz4_c0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
     let currentSpeaker = "";
-    let checkAnimationId;
-    const sampleRate = 44100;
+    const sampleRate = 16000;
 
     const setupUI = document.getElementById('setupInterface');
-    const micCheckUI = document.getElementById('micCheckInterface');
     const recordingUI = document.getElementById('recordingInterface');
     const doneUI = document.getElementById('doneScreen');
     const recBtn = document.getElementById('recBtn');
     const nextBtn = document.getElementById('nextBtn');
     const hintMsg = document.getElementById('hintMsg');
-    
-    const volumeBar = document.getElementById('volumeBar');
-    const volumeStatus = document.getElementById('volumeStatus');
-    const confirmMicBtn = document.getElementById('confirmMicBtn');
 
+    // Helper to get YYYY-MM-DD
     function getFormattedDate() {
         const d = new Date();
         const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -146,89 +119,16 @@
         return `${year}-${month}-${day}`;
     }
 
-    // Phase 1 -> Phase 2 (Mic Check)
-    document.getElementById('startSessionBtn').onclick = async () => {
+    document.getElementById('startSessionBtn').onclick = () => {
         const name = document.getElementById('speakerName').value.trim();
         if (!name) return alert("Please enter a name.");
         currentSpeaker = name.replace(/\s+/g, '_');
         document.getElementById('displayName').textContent = currentSpeaker;
-        
         setupUI.style.display = "none";
-        micCheckUI.style.display = "block";
-        
-        // Initialize mic check logic
-        await runLoudnessCheck();
-    };
-
-    // Real-time Loudness Meter Implementation using AnalyserNode
-    async function runLoudnessCheck() {
-        try {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
-            }
-            if (!stream) {
-                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            }
-
-            const checkInput = audioContext.createMediaStreamSource(stream);
-            const analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            checkInput.connect(analyser);
-
-            let passedCheck = false;
-
-            function updateMeter() {
-                analyser.getByteFrequencyData(dataArray);
-                
-                // Calculate Root Mean Square (RMS) for generalized volume amplitude
-                let total = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    total += dataArray[i];
-                }
-                let average = total / bufferLength;
-                
-                // Map volume to a 0-100% UI width metric
-                let volumePercentage = Math.min(100, Math.floor((average / 128) * 100));
-                volumeBar.style.width = volumePercentage + "%";
-
-                // Visual adjustments based on acoustic limits
-                if (volumePercentage < 10) {
-                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please check mic or speak up)</span>";
-                    volumeBar.style.background = "#ea4335";
-                } else if (volumePercentage > 85) {
-                    volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊 (Clipping danger! Move mic away)</span>";
-                    volumeBar.style.background = "#fcc419";
-                } else {
-                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌 (Ready to advance)</span>";
-                    volumeBar.style.background = "#34a853";
-                    
-                    if (!passedCheck) {
-                        passedCheck = true;
-                        confirmMicBtn.disabled = false; // Enable moving onto production data collection
-                    }
-                }
-                checkAnimationId = requestAnimationFrame(updateMeter);
-            }
-            updateMeter();
-            
-        } catch (err) {
-            alert("Microphone access denied or unavailable. Please review browser hardware permissions.");
-            console.error(err);
-        }
-    }
-
-    // Phase 2 -> Phase 3 (Actual Recording Screen)
-    confirmMicBtn.onclick = () => {
-        cancelAnimationFrame(checkAnimationId); // Kill loop to conserve performance overhead
-        micCheckUI.style.display = "none";
         recordingUI.style.display = "block";
     };
 
     recBtn.onclick = async () => {
-        // Redundant safety check in case state was dropped
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -256,17 +156,14 @@
         }
     };
 
-nextBtn.onclick = async () => {
-        // Helper function to remove line breaks from textarea inputs
-        const sanitize = (text) => text.replace(/[\r\n]+/g, ' ').trim();
-
-        const target = sanitize(document.getElementById('targetInput').value);
+    nextBtn.onclick = async () => {
+        const target = document.getElementById('targetInput').value.trim();
         if (!target) return alert("Please type the sentence text.");
 
         sessionData.push({
             target: target,
-            gloss: sanitize(document.getElementById('glossInput').value),
-            trans: sanitize(document.getElementById('transInput').value),
+            gloss: document.getElementById('glossInput').value.trim(),
+            trans: document.getElementById('transInput').value.trim(),
             wav: exportWAV(audioData)
         });
 
@@ -279,11 +176,11 @@ nextBtn.onclick = async () => {
         nextBtn.disabled = true;
         hintMsg.style.display = "none";
 
-        if (sessionData.length >= 5) { // Change this back to 20 or your desired number
+        if (sessionData.length >= 5) {
             handleFinalExport();
         }
     };
-    
+
     async function handleFinalExport() {
         recordingUI.style.display = "none";
         document.getElementById('mainTitle').style.display = "none";
@@ -295,14 +192,17 @@ nextBtn.onclick = async () => {
         
         sessionData.forEach((item, i) => {
             const index = String(i + 1).padStart(3, '0');
+            // File naming: Speaker_Date_item001.wav
             const fileName = `${currentSpeaker}_${dateStr}_item${index}`;
             zip.file(`${fileName}.wav`, item.wav);
             tsv += `${currentSpeaker}\t${fileName}.wav\t${item.target}\t${item.gloss}\t${item.trans}\n`;
         });
 
+        // TSV naming: Metadata_Speaker_Date.tsv
         zip.file(`Metadata_${currentSpeaker}_${dateStr}.tsv`, tsv);
         const content = await zip.generateAsync({type:"blob"});
         
+        // ZIP naming: Speaker_Date_Data.zip
         const link = document.createElement('a');
         link.href = URL.createObjectURL(content);
         link.download = `${currentSpeaker}_${dateStr}_Data.zip`;

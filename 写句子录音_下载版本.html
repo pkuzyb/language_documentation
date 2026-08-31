@@ -18,12 +18,6 @@
         }
         .speaker-box { background-color: #e8f0fe; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #1a73e8; }
         
-        /* Loudness Check UI Elements */
-        #micCheckInterface { display: none; background: #f8f9fa; border: 2px solid #e0e0e0; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .meter-container { background: #eee; width: 100%; height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; position: relative; }
-        #volumeBar { background: #34a853; width: 0%; height: 100%; transition: width 0.1s ease; }
-        #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
-        
         #recordingInterface { display: none; margin-top: 20px; }
         .target-lang { height: 80px; font-size: 1.2rem; border-left: 5px solid #1a73e8; resize: none; }
         .gloss-lang { height: 60px; font-family: monospace; background: #fafafa; }
@@ -33,8 +27,8 @@
         button { padding: 15px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
         #startSessionBtn { background: #1a73e8; color: white; width: 100%; }
-        #confirmMicBtn { background: #34a853; color: white; width: 100%; margin-top: 15px; }
-        #confirmMicBtn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        /* Recording Button Styling */
         #recBtn { background: #ea4335; color: white; min-width: 200px; }
         #recBtn.active { background: #c5221f; animation: pulse 1.5s infinite; }
         #recBtn:disabled { background: #ccc !important; color: #888; cursor: not-allowed; border: 1px solid #bbb; }
@@ -42,9 +36,8 @@
         #nextBtn { background: #1a73e8; color: white; }
         #nextBtn:disabled { background: #eee; color: #aaa; cursor: default; }
 
-        #doneScreen { display: none; padding: 40px 20px; }
-        .done-text { font-size: 2.2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
-        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; }
+        #doneScreen { display: none; padding: 60px 20px; }
+        .done-text { font-size: 2.5rem; color: #34a853; font-weight: 800; margin-bottom: 10px; }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
@@ -54,7 +47,6 @@
 <div class="container">
     <h1 id="mainTitle">Sentence_Write_Recording</h1>
     
-    <!-- Step 1: Speaker Info -->
     <div id="setupInterface" class="speaker-box">
         <div class="field-group">
             <label>Speaker Name</label>
@@ -63,23 +55,11 @@
         <button id="startSessionBtn">Start Session</button>
     </div>
 
-    <!-- Step 2: New Loudness/Mic Check Screen -->
-    <div id="micCheckInterface">
-        <h3>🎙 Audio Calibration & Loudness Check</h3>
-        <p style="font-size: 0.9em; color: #666;">Please speak normally to test your microphone levels before recording.</p>
-        <div class="meter-container">
-            <div id="volumeBar"></div>
-        </div>
-        <div id="volumeStatus">Status: Waiting for audio...</div>
-        <button id="confirmMicBtn" disabled>Proceed to Recording</button>
-    </div>
-
-    <!-- Step 3: Recording Interface -->
     <div id="recordingInterface">
         <div style="margin-bottom: 20px;">Speaker: <b id="displayName"></b> | Progress: <b id="count">0</b> / 5</div>
 
         <div class="field-group">
-            <label>Sentence</label>
+            <label>Target Language</label>
             <textarea id="targetInput" class="target-lang"></textarea>
         </div>
         <div class="field-group">
@@ -100,220 +80,116 @@
         </p>
     </div>
 
-    <!-- Step 4: Final Screen -->
     <div id="doneScreen">
-        <div class="done-text">ALL DONE! / 完成！</div>
-        <p>1. Your recordings were downloaded as a ZIP file.</p>
-        <p>2. The OneDrive upload page has opened in a new tab.</p>
-        
-        <div class="upload-box">
-            <strong>Next Step:</strong> Please select the ZIP file from your <b>Downloads</b> folder and upload it to the OneDrive window.
-            <br><br>
-            <strong>下一步：</strong> 请从您的“下载”文件夹中选择 ZIP 文件并将其上传到 OneDrive 窗口。
-        </div>
-
-        <button id="manualUploadBtn" style="background: #1a73e8; color: white;">Re-open Upload Page / 重新打开上传页面</button>
-        <br>
-        <button onclick="location.reload()" style="background:#eee; margin-top: 20px; font-size: 0.8em;">Start New Session</button>
+        <div class="done-text">YOU ARE DONE!</div>
+        <p>Your recordings have been downloaded automatically.</p>
+        <button onclick="location.reload()" style="background:#eee; margin-top: 30px;">Start New Session</button>
     </div>
 </div>
 
 <script>
-    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgB2Icy_nb4bTZWvTrKqE0LVAQP0MLBD3ZfovgRKVhYxFNQ";
-
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
     let currentSpeaker = "";
-    let checkAnimationId;
-    const sampleRate = 44100;
+    const sampleRate = 16000;
 
     const setupUI = document.getElementById('setupInterface');
-    const micCheckUI = document.getElementById('micCheckInterface');
     const recordingUI = document.getElementById('recordingInterface');
     const doneUI = document.getElementById('doneScreen');
     const recBtn = document.getElementById('recBtn');
     const nextBtn = document.getElementById('nextBtn');
     const hintMsg = document.getElementById('hintMsg');
-    
-    const volumeBar = document.getElementById('volumeBar');
-    const volumeStatus = document.getElementById('volumeStatus');
-    const confirmMicBtn = document.getElementById('confirmMicBtn');
 
-    function getFormattedDate() {
-        const d = new Date();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${year}-${month}-${day}`;
-    }
-
-    // Phase 1 -> Phase 2 (Mic Check)
-    document.getElementById('startSessionBtn').onclick = async () => {
+    document.getElementById('startSessionBtn').onclick = () => {
         const name = document.getElementById('speakerName').value.trim();
         if (!name) return alert("Please enter a name.");
         currentSpeaker = name.replace(/\s+/g, '_');
         document.getElementById('displayName').textContent = currentSpeaker;
-        
         setupUI.style.display = "none";
-        micCheckUI.style.display = "block";
-        
-        // Initialize mic check logic
-        await runLoudnessCheck();
-    };
-
-    // Real-time Loudness Meter Implementation using AnalyserNode
-    async function runLoudnessCheck() {
-        try {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
-            }
-            if (!stream) {
-                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            }
-
-            const checkInput = audioContext.createMediaStreamSource(stream);
-            const analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            checkInput.connect(analyser);
-
-            let passedCheck = false;
-
-            function updateMeter() {
-                analyser.getByteFrequencyData(dataArray);
-                
-                // Calculate Root Mean Square (RMS) for generalized volume amplitude
-                let total = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    total += dataArray[i];
-                }
-                let average = total / bufferLength;
-                
-                // Map volume to a 0-100% UI width metric
-                let volumePercentage = Math.min(100, Math.floor((average / 128) * 100));
-                volumeBar.style.width = volumePercentage + "%";
-
-                // Visual adjustments based on acoustic limits
-                if (volumePercentage < 10) {
-                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please check mic or speak up)</span>";
-                    volumeBar.style.background = "#ea4335";
-                } else if (volumePercentage > 85) {
-                    volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊 (Clipping danger! Move mic away)</span>";
-                    volumeBar.style.background = "#fcc419";
-                } else {
-                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌 (Ready to advance)</span>";
-                    volumeBar.style.background = "#34a853";
-                    
-                    if (!passedCheck) {
-                        passedCheck = true;
-                        confirmMicBtn.disabled = false; // Enable moving onto production data collection
-                    }
-                }
-                checkAnimationId = requestAnimationFrame(updateMeter);
-            }
-            updateMeter();
-            
-        } catch (err) {
-            alert("Microphone access denied or unavailable. Please review browser hardware permissions.");
-            console.error(err);
-        }
-    }
-
-    // Phase 2 -> Phase 3 (Actual Recording Screen)
-    confirmMicBtn.onclick = () => {
-        cancelAnimationFrame(checkAnimationId); // Kill loop to conserve performance overhead
-        micCheckUI.style.display = "none";
         recordingUI.style.display = "block";
     };
 
     recBtn.onclick = async () => {
-        // Redundant safety check in case state was dropped
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
         if (recBtn.textContent === "Start Recording") {
+            // STARTING
             audioData = [];
             input = audioContext.createMediaStreamSource(stream);
             processor = audioContext.createScriptProcessor(4096, 1, 1);
             processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
             input.connect(processor);
             processor.connect(audioContext.destination);
+            
             recBtn.textContent = "Stop Recording";
             recBtn.classList.add('active');
             nextBtn.disabled = true;
             hintMsg.style.display = "none";
         } else {
+            // STOPPING
             processor.disconnect();
             input.disconnect();
             recBtn.textContent = "Start Recording";
             recBtn.classList.remove('active');
+            
+            // KEY CHANGE: GREY OUT START UNTIL SAVE IS CLICKED
             recBtn.disabled = true;
             nextBtn.disabled = false;
             hintMsg.style.display = "block";
         }
     };
 
-nextBtn.onclick = async () => {
-        // Helper function to remove line breaks from textarea inputs
-        const sanitize = (text) => text.replace(/[\r\n]+/g, ' ').trim();
-
-        const target = sanitize(document.getElementById('targetInput').value);
+    nextBtn.onclick = async () => {
+        const target = document.getElementById('targetInput').value.trim();
         if (!target) return alert("Please type the sentence text.");
 
         sessionData.push({
             target: target,
-            gloss: sanitize(document.getElementById('glossInput').value),
-            trans: sanitize(document.getElementById('transInput').value),
+            gloss: document.getElementById('glossInput').value.trim(),
+            trans: document.getElementById('transInput').value.trim(),
             wav: exportWAV(audioData)
         });
 
         document.getElementById('count').textContent = sessionData.length;
+
+        // Reset Inputs
         document.getElementById('targetInput').value = "";
         document.getElementById('glossInput').value = "";
         document.getElementById('transInput').value = "";
         
+        // RE-ENABLE START BUTTON FOR NEXT ITEM
         recBtn.disabled = false;
         nextBtn.disabled = true;
         hintMsg.style.display = "none";
 
-        if (sessionData.length >= 5) { // Change this back to 20 or your desired number
+        if (sessionData.length >= 5) {
             handleFinalExport();
         }
     };
-    
+
     async function handleFinalExport() {
         recordingUI.style.display = "none";
         document.getElementById('mainTitle').style.display = "none";
         doneUI.style.display = "block";
 
-        const dateStr = getFormattedDate();
         const zip = new JSZip();
         let tsv = "Speaker\tFile\tTarget\tGloss\tTranslation\n";
         
         sessionData.forEach((item, i) => {
-            const index = String(i + 1).padStart(3, '0');
-            const fileName = `${currentSpeaker}_${dateStr}_item${index}`;
+            const fileName = `Sentence_${currentSpeaker}_item${i+1}`;
             zip.file(`${fileName}.wav`, item.wav);
             tsv += `${currentSpeaker}\t${fileName}.wav\t${item.target}\t${item.gloss}\t${item.trans}\n`;
         });
 
-        zip.file(`Metadata_${currentSpeaker}_${dateStr}.tsv`, tsv);
+        zip.file("Metadata.tsv", tsv);
         const content = await zip.generateAsync({type:"blob"});
-        
         const link = document.createElement('a');
         link.href = URL.createObjectURL(content);
-        link.download = `${currentSpeaker}_${dateStr}_Data.zip`;
+        link.download = `${currentSpeaker}_Data_Complete.zip`;
         link.click();
-
-        window.open(ONEDRIVE_LINK, '_blank');
     }
-
-    document.getElementById('manualUploadBtn').onclick = () => {
-        window.open(ONEDRIVE_LINK, '_blank');
-    };
 
     function exportWAV(bufferList) {
         const buffer = flatten(bufferList);
@@ -339,6 +215,7 @@ nextBtn.onclick = async () => {
         }
         return new Blob([view], { type: 'audio/wav' });
     }
+
     function flatten(list) {
         let len = list.reduce((a, b) => a + b.length, 0);
         let res = new Float32Array(len);
@@ -346,6 +223,7 @@ nextBtn.onclick = async () => {
         for (let b of list) { res.set(b, off); off += b.length; }
         return res;
     }
+
     function writeString(v, o, s) {
         for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
     }
