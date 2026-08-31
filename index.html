@@ -76,7 +76,7 @@
 
     <!-- Step 3: Recording Interface -->
     <div id="recordingInterface">
-        <div style="margin-bottom: 20px;">Speaker: <b id="displayName"></b> | Progress: <b id="count">0</b> / 5</div>
+        <div style="margin-bottom: 20px;">Speaker: <b id="displayName"></b> | Progress: <b id="count">0</b> / 20</div>
 
         <div class="field-group">
             <label>Sentence</label>
@@ -119,7 +119,7 @@
 </div>
 
 <script>
-    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgB2Icy_nb4bTZWvTrKqE0LVAQP0MLBD3ZfovgRKVhYxFNQ";
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
     let currentSpeaker = "";
@@ -279,7 +279,7 @@ nextBtn.onclick = async () => {
         nextBtn.disabled = true;
         hintMsg.style.display = "none";
 
-        if (sessionData.length >= 5) { // Change this back to 20 or your desired number
+        if (sessionData.length >= 20) { // Change this back to 20 or your desired number
             handleFinalExport();
         }
     };
