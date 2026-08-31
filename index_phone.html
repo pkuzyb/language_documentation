@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sentence Writing & Recording</title>
+    <title>Sentence_Write_Recording</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 850px; margin: 0 auto; background: #f0f2f5; color: #333; padding: 20px; }
@@ -104,7 +104,7 @@
     <!-- Step 2: Loudness/Mic Check Screen -->
     <div id="micCheckInterface">
         <h3>🎙 Audio Check</h3>
-        <p style="font-size: 0.85em; color: #666;">Speak normally to test your microphone.</p>
+        <p style="font-size: 0.85em; color: #666;">Please speak into the mic to test your volume level.</p>
         <div class="meter-container">
             <div id="volumeBar"></div>
         </div>
@@ -234,7 +234,6 @@
             const dataArray = new Uint8Array(bufferLength);
             
             checkInput.connect(analyser);
-            let passedCheck = false;
 
             function updateMeter() {
                 analyser.getByteFrequencyData(dataArray);
@@ -245,20 +244,18 @@
                 let volumePercentage = Math.min(100, Math.floor((average / 128) * 100));
                 volumeBar.style.width = volumePercentage + "%";
 
+                // Enforce volume validation: must hit target range (10% to 85%) to unlock
                 if (volumePercentage < 10) {
-                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please speak louder to proceed)</span>";
+                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please speak louder to unlock button)</span>";
                     volumeBar.style.background = "#ea4335";
-                    passedCheck = false;
                     confirmMicBtn.disabled = true;
                 } else if (volumePercentage > 85) {
                     volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊 (Clipping danger! Move mic away)</span>";
                     volumeBar.style.background = "#fcc419";
-                    passedCheck = true;
-                    confirmMicBtn.disabled = false;
+                    confirmMicBtn.disabled = true;
                 } else {
-                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌</span>";
+                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌 (Button Unlocked!)</span>";
                     volumeBar.style.background = "#34a853";
-                    passedCheck = true;
                     confirmMicBtn.disabled = false;
                 }
                 checkAnimationId = requestAnimationFrame(updateMeter);
