@@ -155,12 +155,14 @@
         <!-- Phone 4-Button View -->
         <div id="mobileDoneView">
             <div class="upload-box">
-                <strong>Next Step:</strong> Complete the steps below to submit your recording package.
+                <strong>Submission Instructions:</strong><br>
+                1. Save your file locally or share to a chat/email app.<br>
+                2. Send it directly to: <b>zhang3435@wisc.edu</b><br>
+                3. Or upload your saved file to the OneDrive link below.
             </div>
 
             <div class="final-btn-stack">
                 <button id="shareFileBtn" style="background: #34a853; color: white;">1. Choose App or Save to Local</button>
-                <button id="emailBtn" style="background: #fbbc05; color: #333;">2. Email zhang3435@wisc.edu</button>
                 <button id="manualUploadBtn" style="background: #1a73e8; color: white;">3. Upload to OneDrive from Local</button>
                 <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">4. Start New Session</button>
             </div>
@@ -189,7 +191,6 @@
     const volumeStatus = document.getElementById('volumeStatus');
     const confirmMicBtn = document.getElementById('confirmMicBtn');
     const shareFileBtn = document.getElementById('shareFileBtn');
-    const emailBtn = document.getElementById('emailBtn');
 
     function getFormattedDate() {
         const d = new Date();
@@ -378,13 +379,6 @@
                 mobLink.download = zipFileName;
                 mobLink.click();
             }
-        };
-
-        // Mobile Button 2: Email
-        emailBtn.onclick = () => {
-            const subject = encodeURIComponent(`Speech Data Submission: ${currentSpeaker} (${currentLang})`);
-            const body = encodeURIComponent("Hello,\n\nPlease find my speech data attached to this email. (Note: Make sure to attach the ZIP file you saved locally before sending).");
-            window.location.href = `mailto:zhang3435@wisc.edu?subject=${subject}&body=${body}`;
         };
     }
 
