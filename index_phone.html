@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sentence_Write_Recording</title>
+    <title>Sentence Writing & Recording</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 850px; margin: 0 auto; background: #f0f2f5; color: #333; padding: 20px; }
@@ -156,8 +156,8 @@
         <div id="mobileDoneView">
             <div class="upload-box">
                 <strong>Submission Instructions:</strong><br>
-                1. Tap Button 1 to send via chat app (WeChat, Messenger) or email.<br>
-                2. If sending via email, please send to: <b>zhang3435@wisc.edu</b>
+                1. Click Button 1 to open a chat app (WeChat, Messenger) or email.<br>
+                2. If sending via email, write to: <b>zhang3435@wisc.edu</b>
             </div>
 
             <div class="final-btn-stack">
@@ -246,18 +246,20 @@
                 volumeBar.style.width = volumePercentage + "%";
 
                 if (volumePercentage < 10) {
-                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈</span>";
+                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please speak louder to proceed)</span>";
                     volumeBar.style.background = "#ea4335";
+                    passedCheck = false;
+                    confirmMicBtn.disabled = true;
                 } else if (volumePercentage > 85) {
-                    volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊</span>";
+                    volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊 (Clipping danger! Move mic away)</span>";
                     volumeBar.style.background = "#fcc419";
+                    passedCheck = true;
+                    confirmMicBtn.disabled = false;
                 } else {
-                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect 👌</span>";
+                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌</span>";
                     volumeBar.style.background = "#34a853";
-                    if (!passedCheck) {
-                        passedCheck = true;
-                        confirmMicBtn.disabled = false;
-                    }
+                    passedCheck = true;
+                    confirmMicBtn.disabled = false;
                 }
                 checkAnimationId = requestAnimationFrame(updateMeter);
             }
