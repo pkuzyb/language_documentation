@@ -46,6 +46,10 @@
         .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
         .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; font-size: 0.9rem;}
 
+        /* Default Desktop Final Screen layout */
+        #desktopDoneView { display: block; }
+        #mobileDoneView { display: none; }
+
         .final-btn-stack { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-top: 20px; }
         .final-btn-stack button { max-width: 100%; width: 100%; }
 
@@ -56,6 +60,10 @@
             .container { padding: 20px 15px; }
             .btn-group { flex-direction: column; align-items: center; gap: 10px; }
             button { max-width: 100%; }
+
+            /* Switch to Phone 4-Button View on Mobile Screens */
+            #desktopDoneView { display: none; }
+            #mobileDoneView { display: block; }
         }
     </style>
 </head>
@@ -134,15 +142,28 @@
     <div id="doneScreen">
         <div class="done-text">ALL DONE! / 完成！</div>
         
-        <div class="upload-box">
-            <strong>Next Step:</strong> Save your data file using Button 1, then submit it using either Button 2 (Email) or Button 3 (OneDrive).
+        <!-- Desktop Original View -->
+        <div id="desktopDoneView">
+            <div class="upload-box">
+                <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
+            </div>
+            <button id="desktopManualUploadBtn" style="background: #1a73e8; color: white;">Open OneDrive Upload</button>
+            <br>
+            <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
         </div>
 
-        <div class="final-btn-stack">
-            <button id="shareFileBtn" style="background: #34a853; color: white;">1. Choose App or Save to Local</button>
-            <button id="emailBtn" style="background: #fbbc05; color: #333;">2. Email zhang3435@wisc.edu</button>
-            <button id="manualUploadBtn" style="background: #1a73e8; color: white;">3. Upload to OneDrive from Local</button>
-            <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">4. Start New Session</button>
+        <!-- Phone 4-Button View -->
+        <div id="mobileDoneView">
+            <div class="upload-box">
+                <strong>Next Step:</strong> Complete the steps below to submit your recording package.
+            </div>
+
+            <div class="final-btn-stack">
+                <button id="shareFileBtn" style="background: #34a853; color: white;">1. Choose App or Save to Local</button>
+                <button id="emailBtn" style="background: #fbbc05; color: #333;">2. Email zhang3435@wisc.edu</button>
+                <button id="manualUploadBtn" style="background: #1a73e8; color: white;">3. Upload to OneDrive from Local</button>
+                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">4. Start New Session</button>
+            </div>
         </div>
     </div>
 </div>
@@ -305,7 +326,7 @@
         nextBtn.disabled = true;
         hintMsg.style.display = "none";
 
-        if (sessionData.length >= 1) { // Left at 1 for your quick testing. Change to 20 for full session.
+        if (sessionData.length >= 1) { // Change to 20 for full production session
             handleFinalExport();
         }
     };
@@ -332,9 +353,16 @@
         const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data.zip`;
         generatedZipFile = new File([content], zipFileName, { type: 'application/zip' });
 
-        // Setup Button 1: Share / Download
-        if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
-            shareFileBtn.onclick = async () => {
+        // Desktop Auto-download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = zipFileName;
+        link.click();
+        setTimeout(() => { window.open(ONEDRIVE_LINK, '_blank'); }, 1000);
+
+        // Mobile Button 1: Share or Download Local
+        shareFileBtn.onclick = async () => {
+            if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
                 try {
                     await navigator.share({
                         files: [generatedZipFile],
@@ -344,21 +372,15 @@
                 } catch (err) {
                     console.log("Share cancelled or failed", err);
                 }
-            };
-        } else {
-            // Fallback for Desktop/Unsupported browsers
-            shareFileBtn.textContent = "1. Download to Local";
-            shareFileBtn.onclick = () => {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = zipFileName;
-                link.click();
-            };
-            // Trigger auto-download on desktop
-            shareFileBtn.click();
-        }
+            } else {
+                const mobLink = document.createElement('a');
+                mobLink.href = URL.createObjectURL(content);
+                mobLink.download = zipFileName;
+                mobLink.click();
+            }
+        };
 
-        // Setup Button 2: Email
+        // Mobile Button 2: Email
         emailBtn.onclick = () => {
             const subject = encodeURIComponent(`Speech Data Submission: ${currentSpeaker} (${currentLang})`);
             const body = encodeURIComponent("Hello,\n\nPlease find my speech data attached to this email. (Note: Make sure to attach the ZIP file you saved locally before sending).");
@@ -366,7 +388,12 @@
         };
     }
 
-    // Setup Button 3: Upload to OneDrive
+    // Desktop OneDrive manual button
+    document.getElementById('desktopManualUploadBtn').onclick = () => {
+        window.open(ONEDRIVE_LINK, '_blank');
+    };
+
+    // Mobile Button 3: OneDrive upload from local
     document.getElementById('manualUploadBtn').onclick = () => {
         window.open(ONEDRIVE_LINK, '_blank');
     };
