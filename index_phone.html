@@ -61,7 +61,7 @@
             .btn-group { flex-direction: column; align-items: center; gap: 10px; }
             button { max-width: 100%; }
 
-            /* Switch to Phone 4-Button View on Mobile Screens */
+            /* Switch to Phone 2-Button View on Mobile Screens */
             #desktopDoneView { display: none; }
             #mobileDoneView { display: block; }
         }
@@ -152,19 +152,17 @@
             <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
         </div>
 
-        <!-- Phone 4-Button View -->
+        <!-- Phone 2-Button View -->
         <div id="mobileDoneView">
             <div class="upload-box">
                 <strong>Submission Instructions:</strong><br>
-                1. Save your file locally or share to a chat/email app.<br>
-                2. Send it directly to: <b>zhang3435@wisc.edu</b><br>
-                3. Or upload your saved file to the OneDrive link below.
+                1. Tap Button 1 to send via chat app (WeChat, Messenger) or email.<br>
+                2. If sending via email, please send to: <b>zhang3435@wisc.edu</b>
             </div>
 
             <div class="final-btn-stack">
-                <button id="shareFileBtn" style="background: #34a853; color: white;">1. Choose App or Save to Local</button>
-                <button id="manualUploadBtn" style="background: #1a73e8; color: white;">3. Upload to OneDrive from Local</button>
-                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">4. Start New Session</button>
+                <button id="shareFileBtn" style="background: #34a853; color: white;">1. Send via App (WeChat, Messenger, Email)</button>
+                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">2. New Session</button>
             </div>
         </div>
     </div>
@@ -359,16 +357,15 @@
         link.href = URL.createObjectURL(content);
         link.download = zipFileName;
         link.click();
-        setTimeout(() => { window.open(ONEDRIVE_LINK, '_blank'); }, 1000);
 
-        // Mobile Button 1: Share or Download Local
+        // Mobile Button 1: Share via App (WeChat, Messenger, Email, etc.)
         shareFileBtn.onclick = async () => {
             if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
                 try {
                     await navigator.share({
                         files: [generatedZipFile],
                         title: 'Recording Data',
-                        text: 'Speech recording data.'
+                        text: 'Speech recording data package for zhang3435@wisc.edu'
                     });
                 } catch (err) {
                     console.log("Share cancelled or failed", err);
@@ -384,11 +381,6 @@
 
     // Desktop OneDrive manual button
     document.getElementById('desktopManualUploadBtn').onclick = () => {
-        window.open(ONEDRIVE_LINK, '_blank');
-    };
-
-    // Mobile Button 3: OneDrive upload from local
-    document.getElementById('manualUploadBtn').onclick = () => {
         window.open(ONEDRIVE_LINK, '_blank');
     };
 
