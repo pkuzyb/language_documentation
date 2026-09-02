@@ -114,7 +114,7 @@
 
     <!-- Step 3: Recording Interface -->
     <div id="recordingInterface">
-        <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / 20</div>
+        <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / 5</div>
 
         <div class="field-group">
             <label>Sentence</label>
@@ -130,11 +130,11 @@
         </div>
 
         <div class="btn-group">
-            <button id="recBtn">Start Recording</button>
+            <button id="recBtn">Start Recording (Take 1 of 2)</button>
             <button id="nextBtn" disabled>Save & Next</button>
         </div>
         <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
-            ⚠ Click "Save & Next" to continue.
+            ⚠ Record 2 takes before clicking "Save & Next".
         </p>
     </div>
 
@@ -177,6 +177,9 @@
     let checkAnimationId;
     const sampleRate = 44100;
     let generatedZipFile = null;
+
+    let currentSentenceTakes = [];
+    const TOTAL_SENTENCES = 5;
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
@@ -244,7 +247,6 @@
                 let volumePercentage = Math.min(100, Math.floor((average / 128) * 100));
                 volumeBar.style.width = volumePercentage + "%";
 
-                // Enforce volume validation: must hit target range (10% to 85%) to unlock
                 if (volumePercentage < 10) {
                     volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please speak louder to unlock button)</span>";
                     volumeBar.style.background = "#ea4335";
@@ -272,7 +274,17 @@
         cancelAnimationFrame(checkAnimationId);
         micCheckUI.style.display = "none";
         recordingUI.style.display = "block";
+        updateProgressDisplay();
     };
+
+    function updateProgressDisplay() {
+        document.getElementById('count').textContent = sessionData.length;
+        const takeNum = currentSentenceTakes.length + 1;
+        
+        if (currentSentenceTakes.length < 2) {
+            recBtn.textContent = `Start Recording (Take ${takeNum} of 2)`;
+        }
+    }
 
     recBtn.onclick = async () => {
         if (!audioContext) {
@@ -280,25 +292,37 @@
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
-        if (recBtn.textContent === "Start Recording") {
+        if (recBtn.textContent.startsWith("Start Recording")) {
             audioData = [];
             input = audioContext.createMediaStreamSource(stream);
             processor = audioContext.createScriptProcessor(4096, 1, 1);
             processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
             input.connect(processor);
             processor.connect(audioContext.destination);
-            recBtn.textContent = "Stop Recording";
+            recBtn.textContent = `Stop Recording (Take ${currentSentenceTakes.length + 1})`;
             recBtn.classList.add('active');
             nextBtn.disabled = true;
             hintMsg.style.display = "none";
         } else {
             processor.disconnect();
             input.disconnect();
-            recBtn.textContent = "Start Recording";
+            
+            currentSentenceTakes.push(exportWAV(audioData));
             recBtn.classList.remove('active');
-            recBtn.disabled = true;
-            nextBtn.disabled = false;
-            hintMsg.style.display = "block";
+
+            if (currentSentenceTakes.length < 2) {
+                recBtn.disabled = false;
+                nextBtn.disabled = true;
+                updateProgressDisplay();
+                hintMsg.style.display = "block";
+                hintMsg.textContent = "⚠ Take 1 saved. Click button above to record Take 2.";
+            } else {
+                recBtn.disabled = true;
+                nextBtn.disabled = false;
+                recBtn.textContent = "2 Takes Recorded ✓";
+                hintMsg.style.display = "block";
+                hintMsg.textContent = "⚠ 2 takes complete! Click 'Save & Next' to continue.";
+            }
         }
     };
 
@@ -307,15 +331,19 @@
         const target = sanitize(document.getElementById('targetInput').value);
         
         if (!target) return alert("Please type the sentence text.");
+        if (currentSentenceTakes.length < 2) return alert("Please record 2 takes before continuing.");
 
         sessionData.push({
             target: target,
             gloss: sanitize(document.getElementById('glossInput').value),
             trans: sanitize(document.getElementById('transInput').value),
-            wav: exportWAV(audioData)
+            take1: currentSentenceTakes[0],
+            take2: currentSentenceTakes[1]
         });
 
-        document.getElementById('count').textContent = sessionData.length;
+        currentSentenceTakes = [];
+        updateProgressDisplay();
+        
         document.getElementById('targetInput').value = "";
         document.getElementById('glossInput').value = "";
         document.getElementById('transInput').value = "";
@@ -324,7 +352,7 @@
         nextBtn.disabled = true;
         hintMsg.style.display = "none";
 
-        if (sessionData.length >= 1) { // Change to 20 for full production session
+        if (sessionData.length >= TOTAL_SENTENCES) {
             handleFinalExport();
         }
     };
@@ -336,13 +364,18 @@
 
         const dateStr = getFormattedDate();
         const zip = new JSZip();
-        let tsv = "Language\tSpeaker\tFile\tTarget\tGloss\tTranslation\n";
+        let tsv = "Language\tSpeaker\tFile\tTake\tTarget\tGloss\tTranslation\n";
         
         sessionData.forEach((item, i) => {
             const index = String(i + 1).padStart(3, '0');
-            const fileName = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}`;
-            zip.file(`${fileName}.wav`, item.wav);
-            tsv += `${currentLang}\t${currentSpeaker}\t${fileName}.wav\t${item.target}\t${item.gloss}\t${item.trans}\n`;
+            
+            const fileName1 = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take1`;
+            zip.file(`${fileName1}.wav`, item.take1);
+            tsv += `${currentLang}\t${currentSpeaker}\t${fileName1}.wav\t1\t${item.target}\t${item.gloss}\t${item.trans}\n`;
+            
+            const fileName2 = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take2`;
+            zip.file(`${fileName2}.wav`, item.take2);
+            tsv += `${currentLang}\t${currentSpeaker}\t${fileName2}.wav\t2\t${item.target}\t${item.gloss}\t${item.trans}\n`;
         });
 
         zip.file(`Metadata_${currentLang}_${currentSpeaker}_${dateStr}.tsv`, tsv);
@@ -351,13 +384,11 @@
         const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data.zip`;
         generatedZipFile = new File([content], zipFileName, { type: 'application/zip' });
 
-        // Desktop Auto-download
         const link = document.createElement('a');
         link.href = URL.createObjectURL(content);
         link.download = zipFileName;
         link.click();
 
-        // Mobile Button 1: Share via App (WeChat, Messenger, Email, etc.)
         shareFileBtn.onclick = async () => {
             if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
                 try {
@@ -378,7 +409,6 @@
         };
     }
 
-    // Desktop OneDrive manual button
     document.getElementById('desktopManualUploadBtn').onclick = () => {
         window.open(ONEDRIVE_LINK, '_blank');
     };
