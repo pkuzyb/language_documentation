@@ -61,7 +61,7 @@
             .btn-group { flex-direction: column; align-items: center; gap: 10px; }
             button { max-width: 100%; }
 
-            /* Switch to Phone 2-Button View on Mobile Screens */
+            /* Switch to Mobile View on Phone Screens */
             #desktopDoneView { display: none; }
             #mobileDoneView { display: block; }
         }
@@ -142,7 +142,7 @@
     <div id="doneScreen">
         <div class="done-text">ALL DONE! / 完成！</div>
         
-        <!-- Desktop Original View -->
+        <!-- Desktop View -->
         <div id="desktopDoneView">
             <div class="upload-box">
                 <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
@@ -152,17 +152,18 @@
             <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
         </div>
 
-        <!-- Phone 2-Button View -->
+        <!-- Mobile Phone View -->
         <div id="mobileDoneView">
             <div class="upload-box">
-                <strong>Submission Instructions:</strong><br>
-                1. Click Button 1 to open a chat app (WeChat, Messenger) or email.<br>
-                2. If sending via email, write to: <b>zhang3435@wisc.edu</b>
+                <strong>Submission Options:</strong><br>
+                1. Share via App/Email (writes to: <b>zhang3435@wisc.edu</b>)<br>
+                2. Or upload directly from your phone to OneDrive folder.
             </div>
 
             <div class="final-btn-stack">
-                <button id="shareFileBtn" style="background: #34a853; color: white;">1. Send via App (WeChat, Messenger, Email)</button>
-                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">2. New Session</button>
+                <button id="shareFileBtn" style="background: #34a853; color: white;">Send via App (WeChat, Messenger, Email)</button>
+                <button id="mobileOneDriveBtn" style="background: #1a73e8; color: white;">Upload directly to OneDrive</button>
+                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">New Session</button>
             </div>
         </div>
     </div>
@@ -410,6 +411,10 @@
     }
 
     document.getElementById('desktopManualUploadBtn').onclick = () => {
+        window.open(ONEDRIVE_LINK, '_blank');
+    };
+
+    document.getElementById('mobileOneDriveBtn').onclick = () => {
         window.open(ONEDRIVE_LINK, '_blank');
     };
 
