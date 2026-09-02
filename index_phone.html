@@ -170,6 +170,7 @@
 </div>
 
 <script>
+    // Updated to standard anonymous File Request endpoint syntax
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
@@ -180,7 +181,7 @@
     let generatedZipFile = null;
 
     let currentSentenceTakes = [];
-    const TOTAL_SENTENCES = 5;
+    const TOTAL_SENTENCES = 1;
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
