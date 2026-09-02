@@ -161,8 +161,8 @@
             </div>
 
             <div class="final-btn-stack">
-                <button id="shareFileBtn" style="background: #34a853; color: white;">Send via App (WeChat, Messenger, Email)</button>
                 <button id="mobileOneDriveBtn" style="background: #1a73e8; color: white;">Upload directly to OneDrive</button>
+                <button id="shareFileBtn" style="background: #34a853; color: white;">Send via App (WeChat, Messenger, Email)</button>
                 <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">New Session</button>
             </div>
         </div>
@@ -170,7 +170,6 @@
 </div>
 
 <script>
-    // Updated to standard anonymous File Request endpoint syntax
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
