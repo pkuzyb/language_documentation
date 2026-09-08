@@ -25,9 +25,48 @@
         #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
         
         #recordingInterface { display: none; margin-top: 20px; }
-        .target-lang { height: 80px; font-size: 1.2rem; border-left: 5px solid #1a73e8; resize: none; }
-        .gloss-lang { height: 60px; font-family: monospace; background: #fafafa; }
+        .target-lang { height: 70px; font-size: 1.1rem; border-left: 5px solid #1a73e8; resize: vertical; }
         .trans-lang { height: 60px; font-style: italic; }
+
+        /* Gloss 对齐容器与卡片样式 */
+        .gloss-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px;
+            background: #fafafa;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            min-height: 75px;
+            align-items: flex-start;
+        }
+        .gloss-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #1a73e8;
+            border-radius: 6px;
+            padding: 6px 8px;
+            min-width: 70px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .gloss-card .word-tag {
+            font-weight: bold;
+            color: #1a73e8;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            word-break: break-all;
+            text-align: center;
+        }
+        .gloss-card input {
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+        }
 
         .btn-group { display: flex; gap: 15px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
         button { padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 300px; }
@@ -46,7 +85,6 @@
         .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
         .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; font-size: 0.9rem;}
 
-        /* Default Desktop Final Screen layout */
         #desktopDoneView { display: block; }
         #mobileDoneView { display: none; }
 
@@ -61,7 +99,6 @@
             .btn-group { flex-direction: column; align-items: center; gap: 10px; }
             button { max-width: 100%; }
 
-            /* Switch to Mobile View on Phone Screens */
             #desktopDoneView { display: none; }
             #mobileDoneView { display: block; }
         }
@@ -117,12 +154,14 @@
         <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / <span id="totalDisplay"></span></div>
 
         <div class="field-group">
-            <label>Sentence</label>
-            <textarea id="targetInput" class="target-lang"></textarea>
+            <label>Sentence (separate words with spaces)</label>
+            <textarea id="targetInput" class="target-lang" placeholder="Type sentence here separated by spaces..."></textarea>
         </div>
         <div class="field-group">
-            <label>Gloss</label>
-            <textarea id="glossInput" class="gloss-lang"></textarea>
+            <label>Gloss (Auto-aligned)</label>
+            <div id="glossContainer" class="gloss-container">
+                <span style="color:#aaa; font-size:0.85rem; padding: 10px;">Type words above to generate aligned gloss boxes...</span>
+            </div>
         </div>
         <div class="field-group">
             <label>Translation</label>
@@ -142,7 +181,6 @@
     <div id="doneScreen">
         <div class="done-text">ALL DONE! / 完成！</div>
         
-        <!-- Desktop View -->
         <div id="desktopDoneView">
             <div class="upload-box">
                 <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
@@ -152,7 +190,6 @@
             <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
         </div>
 
-        <!-- Mobile Phone View -->
         <div id="mobileDoneView">
             <div class="upload-box">
                 <strong>Submission Options:</strong><br>
@@ -170,7 +207,7 @@
 </div>
 
 <script>
-    const TOTAL_SENTENCES = 5;
+    const TOTAL_SENTENCES = 10;
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
@@ -181,6 +218,7 @@
     let generatedZipFile = null;
 
     let currentSentenceTakes = [];
+    let savedGlosses = []; // 保存当前句子的 Gloss 数组
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
@@ -194,7 +232,53 @@
     const confirmMicBtn = document.getElementById('confirmMicBtn');
     const shareFileBtn = document.getElementById('shareFileBtn');
 
+    const targetInput = document.getElementById('targetInput');
+    const glossContainer = document.getElementById('glossContainer');
+
     document.getElementById('totalDisplay').textContent = TOTAL_SENTENCES;
+
+    // 监听 Sentence 输入，实时切词并生成 Gloss 对齐卡片
+    targetInput.addEventListener('input', updateGlossGrid);
+
+    function updateGlossGrid() {
+        // 渲染前暂存现有的输入，防止重新渲染清空已填写的 Gloss
+        const currentInputs = glossContainer.querySelectorAll('.gloss-input-cell');
+        currentInputs.forEach((inp, idx) => {
+            savedGlosses[idx] = inp.value;
+        });
+
+        const text = targetInput.value.replace(/[\r\n]+/g, ' ').trim();
+        const words = text ? text.split(/\s+/) : [];
+
+        glossContainer.innerHTML = '';
+
+        if (words.length === 0) {
+            glossContainer.innerHTML = '<span style="color:#aaa; font-size:0.85rem; padding:10px;">Type words above to generate aligned gloss boxes...</span>';
+            return;
+        }
+
+        words.forEach((word, index) => {
+            const card = document.createElement('div');
+            card.className = 'gloss-card';
+
+            const wordLabel = document.createElement('div');
+            wordLabel.className = 'word-tag';
+            wordLabel.textContent = word;
+
+            const glossInput = document.createElement('input');
+            glossInput.type = 'text';
+            glossInput.className = 'gloss-input-cell';
+            glossInput.placeholder = 'gloss';
+            glossInput.value = savedGlosses[index] || '';
+            glossInput.oninput = (e) => {
+                savedGlosses[index] = e.target.value;
+            };
+
+            card.appendChild(wordLabel);
+            card.appendChild(glossInput);
+            glossContainer.appendChild(card);
+        });
+    }
 
     function getFormattedDate() {
         const d = new Date();
@@ -331,24 +415,29 @@
 
     nextBtn.onclick = async () => {
         const sanitize = (text) => text.replace(/[\r\n]+/g, ' ').trim();
-        const target = sanitize(document.getElementById('targetInput').value);
+        const target = sanitize(targetInput.value);
         
         if (!target) return alert("Please type the sentence text.");
         if (currentSentenceTakes.length < 2) return alert("Please record 2 takes before continuing.");
 
+        // 拼接所有 Gloss 格子中的值
+        const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
+        const combinedGloss = glossCells.map(cell => cell.value.trim() || '*').join(' ');
+
         sessionData.push({
             target: target,
-            gloss: sanitize(document.getElementById('glossInput').value),
+            gloss: combinedGloss,
             trans: sanitize(document.getElementById('transInput').value),
             take1: currentSentenceTakes[0],
             take2: currentSentenceTakes[1]
         });
 
         currentSentenceTakes = [];
+        savedGlosses = [];
         updateProgressDisplay();
         
-        document.getElementById('targetInput').value = "";
-        document.getElementById('glossInput').value = "";
+        targetInput.value = "";
+        glossContainer.innerHTML = '<span style="color:#aaa; font-size:0.85rem; padding:10px;">Type words above to generate aligned gloss boxes...</span>';
         document.getElementById('transInput').value = "";
         
         recBtn.disabled = false;

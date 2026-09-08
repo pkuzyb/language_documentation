@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linguistics Research Participant Background Questionnaire</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, 'PingFang SC', sans-serif; 
+            max-width: 900px; margin: 40px auto; background: #f0f2f5; color: #333; padding: 0 20px;
+        }
+        .container { 
+            background: white; padding: 40px; border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; width: 100%;
+        }
+        h1 { color: #1a73e8; text-align: center; margin-bottom: 30px; }
+        .section-title { 
+            font-size: 1.1em; color: #1a73e8; margin: 25px 0 15px 0; 
+            font-weight: bold; border-left: 5px solid #1a73e8; padding-left: 10px; 
+        }
+        .field-group { margin-bottom: 20px; display: flex; flex-direction: column; text-align: left; }
+        label { font-weight: bold; margin-bottom: 8px; color: #555; font-size: 0.9em; }
+        label.required::after { content: " *"; color: #ea4335; }
+        
+        input, select, textarea { 
+            padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 1rem; box-sizing: border-box; width: 100%;
+        }
+        input:focus, select:focus { border-color: #1a73e8; outline: none; }
+
+        .birthplace-row { display: flex; flex-wrap: wrap; gap: 15px; width: 100%; }
+        .birthplace-row .field-group { flex: 1 1 calc(24% - 15px); min-width: 160px; }
+
+        .list-item { 
+            display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; 
+            margin-bottom: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;
+        }
+
+        .proficiency-hint { font-size: 0.8em; color: #666; margin-bottom: 10px; background: #e8f0fe; padding: 10px; border-radius: 6px; line-height: 1.4; }
+
+        .submit-btn { 
+            background: #1a73e8; color: white; padding: 18px; border: none; 
+            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 30px; 
+        }
+        .submit-btn:hover { background: #1557b0; }
+
+        #doneScreen { display: none; text-align: center; padding: 40px 20px; }
+        .done-text { font-size: 2.2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; }
+        .btn-add { background: #34a853; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 5px; font-size: 0.85em;}
+        .btn-remove { background: #ea4335; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="formInterface">
+        <h1>Demographic Information</h1>
+        <form id="mainForm" onsubmit="handleSubmit(event)">
+            <div class="section-title">1. Basic Information</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">Surname / Last Name</label><input type="text" id="lastName" required></div>
+                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">Given Name / First Name</label><input type="text" id="firstName" required></div>
+            </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 150px;"><label class="required">Date of Birth</label><input type="date" id="birthday" required></div>
+                <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">Height (cm)</label><input type="number" id="height" required></div>
+                <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">Weight (kg)</label><input type="number" id="weight" required></div>
+            </div>
+
+            <div class="section-title">2. Birthplace</div>
+            <div class="birthplace-row">
+                <div class="field-group"><label class="required">Province / State</label><input type="text" id="bp_province" placeholder="e.g., Sichuan Province" required></div>
+                <div class="field-group"><label class="required">City / County</label><input type="text" id="bp_city" placeholder="e.g., Xichang City, Liangshan Prefecture" required></div>
+                <div class="field-group"><label class="required">Township / Town</label><input type="text" id="bp_town" placeholder="Enter N/A if none" required></div>
+                <div class="field-group"><label class="required">Village / Sub-district</label><input type="text" id="bp_village" placeholder="Enter N/A if none" required></div>
+            </div>
+
+            <div class="section-title">3. Education & Occupation</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 250px;">
+                    <label class="required">Highest Level of Education</label>
+                    <select id="education" required>
+                        <option value="">Please select...</option>
+                        <option value="Primary School">Primary School</option>
+                        <option value="Junior High School">Junior High School</option>
+                        <option value="High School">High School</option>
+                        <option value="Secondary Vocational School">Secondary Vocational School</option>
+                        <option value="Associate Degree / College Diploma">Associate Degree / College Diploma</option>
+                        <option value="Bachelor's Degree">Bachelor's Degree</option>
+                        <option value="Master's Degree">Master's Degree</option>
+                        <option value="Doctorate (Ph.D.)">Doctorate (Ph.D.)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="edu_other" placeholder="Please specify your education level..." style="display:none; margin-top:10px;">
+                </div>
+                <div class="field-group" style="flex: 1; min-width: 250px;"><label class="required">Occupation</label><input type="text" id="occupation" required></div>
+            </div>
+
+            <div class="section-title">4. Language Background</div>
+            <div class="field-group">
+                <label class="required">First Language (L1)</label>
+                <input type="text" id="l1_lang" required>
+            </div>
+            <div class="field-group">
+                <label class="required">Other Languages and Proficiency (1-5)</label>
+                <div class="proficiency-hint">
+                    <b>Proficiency Scale:</b><br>
+                    1: Beginner (Simple greetings only) | 2: Elementary (Basic daily conversations)<br>
+                    3: Intermediate (Seamless communication in work/daily life) | 4: Advanced (In-depth discussion/creative writing)<br>
+                    5: Native/Bilingual (Equivalent to native speaker ability)
+                </div>
+                <div id="otherLangContainer"></div>
+                <button type="button" class="btn-add" onclick="addItem('otherLangContainer', 'Language (or N/A)', 'Proficiency')">+ Add Language</button>
+            </div>
+
+            <div class="section-title">5. Residential History</div>
+            <div class="field-group">
+                <label class="required">Other Cities of Long-Term Residence & Duration</label>
+                <div id="cityContainer"></div>
+                <button type="button" class="btn-add" onclick="addItem('cityContainer', 'City (or N/A)', 'Duration (e.g., 3 years; or N/A)')">+ Add Residential History</button>
+            </div>
+
+            <div class="section-title">6. Audio Equipment & Recording Setup (if you make changes, let us know)</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 200px;">
+                    <label class="required">Listening Device (you must wear a headphones or earphones)</label>
+                    <select id="audioDevice" required>
+                        <option value="">Please select...</option>
+                        <option value="Headphones">Headphones (Over-ear / On-ear)</option>
+                        <option value="Earphones">Earphones / Earbuds (In-ear)</option>
+                    </select>
+                </div>
+                <div class="field-group" style="flex: 1; min-width: 200px;">
+                    <label class="required">Recording Device (a computer is preferred for file uploading)</label>
+                    <select id="recordingDevice" required>
+                        <option value="">Please select...</option>
+                        <option value="Phone">Phone</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Desktop">Desktop</option>
+                        <option value="Tablet">Tablet</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="field-group" style="flex: 1; min-width: 200px;">
+                    <label>Headphone/Earphone Brand (Optional)</label>
+                    <input type="text" id="audioBrand" placeholder="e.g., Sony WH-1000XM4, AirPods Pro">
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Complete & Export</button>
+        </form>
+    </div>
+
+    <div id="doneScreen">
+        <div class="done-text">SUCCESS / Completed!</div>
+        <p>1. Data has been exported as a wide-format TSV file (variable names in the first row).</p>
+        <div class="upload-box">
+            <strong>Next Step:</strong> Please upload the downloaded <b>TSV file</b> to the OneDrive folder in the popup window.
+        </div>
+        <button onclick="window.open(ONEDRIVE_LINK, '_blank')" style="background: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Open OneDrive</button>
+    </div>
+</div>
+
+<script>
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
+
+    document.getElementById('education').addEventListener('change', function() {
+        const eduOther = document.getElementById('edu_other');
+        if (this.value === 'Other') {
+            eduOther.style.display = 'block';
+            eduOther.required = true;
+        } else {
+            eduOther.style.display = 'none';
+            eduOther.required = false;
+        }
+    });
+
+    function addItem(containerId, p1, p2) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        const isLang = containerId === 'otherLangContainer';
+        div.innerHTML = `
+            <input type="text" placeholder="${p1}" class="item-name" required>
+            ${isLang ? `<select class="item-val" required>
+                <option value="1">1 (Beginner)</option><option value="2">2 (Elementary)</option>
+                <option value="3">3 (Intermediate)</option><option value="4">4 (Advanced)</option>
+                <option value="5">5 (Native/Bilingual)</option>
+            </select>` : `<input type="text" placeholder="${p2}" class="item-val" required>`}
+            <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(div);
+    }
+
+    window.onload = () => {
+        addItem('otherLangContainer', 'Language (or N/A)', 'Proficiency');
+        addItem('cityContainer', 'City (or N/A)', 'Duration (e.g., 3 years; or N/A)');
+    };
+
+    function handleSubmit(event) {
+        event.preventDefault();
+        const ln = document.getElementById('lastName').value.trim();
+        const fn = document.getElementById('firstName').value.trim();
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        const collectItems = (id) => {
+            let items = [];
+            document.querySelectorAll(`#${id} .list-item`).forEach(el => {
+                const name = el.querySelector('.item-name').value.trim();
+                const val = el.querySelector('.item-val').value.trim();
+                if(name) items.push(`${name}(${val})`);
+            });
+            return items.join("; ");
+        };
+
+        let eduFinal = document.getElementById('education').value;
+        if (eduFinal === 'Other') {
+            eduFinal = "Other: " + document.getElementById('edu_other').value.trim();
+        }
+
+        const headers = [
+            "LastName", "FirstName", "Birthday", "Height_cm", "Weight_kg", 
+            "Province", "City", "Town", "Village", "Education", 
+            "Occupation", "L1", "Other_Langs", "Other_Cities", 
+            "Audio_Device", "Recording_Device", "Audio_Brand", "Submit_Date"
+        ];
+        
+        const audioBrandVal = document.getElementById('audioBrand').value.trim();
+
+        const values = [
+            ln, fn, document.getElementById('birthday').value,
+            document.getElementById('height').value, document.getElementById('weight').value,
+            document.getElementById('bp_province').value, document.getElementById('bp_city').value,
+            document.getElementById('bp_town').value, document.getElementById('bp_village').value,
+            eduFinal,
+            document.getElementById('occupation').value, document.getElementById('l1_lang').value,
+            collectItems('otherLangContainer'), collectItems('cityContainer'),
+            document.getElementById('audioDevice').value,
+            document.getElementById('recordingDevice').value,
+            audioBrandVal !== "" ? audioBrandVal : "N/A",
+            dateStr
+        ];
+
+        let tsvContent = headers.join("\t") + "\n" + values.join("\t");
+
+        const blob = new Blob(["\ufeff" + tsvContent], { type: 'text/tab-separated-values;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Demographics_${ln}_${fn}.tsv`;
+        link.click();
+
+        document.getElementById('formInterface').style.display = 'none';
+        document.getElementById('doneScreen').style.display = 'block';
+        window.open(ONEDRIVE_LINK, '_blank');
+    }
+</script>
+</body>
+</html>
