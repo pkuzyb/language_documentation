@@ -2,67 +2,191 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Linguistics Research Participant Background Questionnaire</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linguistics Research Questionnaire & Consent Form</title>
+    <!-- Libraries for generating PDF and ZIP package -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { 
-            font-family: 'Segoe UI', Tahoma, 'PingFang SC', sans-serif; 
-            max-width: 900px; margin: 40px auto; background: #f0f2f5; color: #333; padding: 0 20px;
+            font-family: Arial, sans-serif; 
+            max-width: 900px; margin: 30px auto; background: #f4f6f9; color: #333; padding: 0 15px;
         }
         .container { 
-            background: white; padding: 40px; border-radius: 15px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; width: 100%;
+            background: white; padding: 35px; border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); box-sizing: border-box; width: 100%;
         }
-        h1 { color: #1a73e8; text-align: center; margin-bottom: 30px; }
+        .step-page { display: none; }
+        .step-page.active { display: block; }
+
+        /* Form UI Styles */
+        h1 { color: #1a73e8; text-align: center; margin-bottom: 25px; font-size: 1.8rem; }
         .section-title { 
             font-size: 1.1em; color: #1a73e8; margin: 25px 0 15px 0; 
-            font-weight: bold; border-left: 5px solid #1a73e8; padding-left: 10px; 
+            font-weight: bold; border-left: 4px solid #1a73e8; padding-left: 8px; 
         }
-        .field-group { margin-bottom: 20px; display: flex; flex-direction: column; text-align: left; }
-        label { font-weight: bold; margin-bottom: 8px; color: #555; font-size: 0.9em; }
+        .field-group { margin-bottom: 15px; display: flex; flex-direction: column; text-align: left; }
+        label { font-weight: bold; margin-bottom: 6px; color: #444; font-size: 0.9em; }
         label.required::after { content: " *"; color: #ea4335; }
         
         input, select, textarea { 
-            padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
-            font-size: 1rem; box-sizing: border-box; width: 100%;
+            padding: 10px; border: 1px solid #ccc; border-radius: 4px; 
+            font-size: 0.95rem; box-sizing: border-box; width: 100%;
         }
-        input:focus, select:focus { border-color: #1a73e8; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #1a73e8; outline: none; }
 
-        .birthplace-row { display: flex; flex-wrap: wrap; gap: 15px; width: 100%; }
-        .birthplace-row .field-group { flex: 1 1 calc(24% - 15px); min-width: 160px; }
+        .birthplace-row { display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
+        .birthplace-row .field-group { flex: 1 1 calc(24% - 12px); min-width: 150px; }
 
         .list-item { 
-            display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; 
-            margin-bottom: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;
+            display: grid; grid-template-columns: 2fr 2fr 40px; gap: 10px; 
+            margin-bottom: 8px; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd;
         }
+        .proficiency-hint { font-size: 0.82em; color: #555; margin-bottom: 10px; background: #e8f0fe; padding: 8px 12px; border-radius: 4px; line-height: 1.4; }
 
-        .proficiency-hint { font-size: 0.8em; color: #666; margin-bottom: 10px; background: #e8f0fe; padding: 10px; border-radius: 6px; line-height: 1.4; }
-
-        .submit-btn { 
-            background: #1a73e8; color: white; padding: 18px; border: none; 
-            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 30px; 
+        .btn-primary { 
+            background: #1a73e8; color: white; padding: 14px; border: none; 
+            border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; 
         }
-        .submit-btn:hover { background: #1557b0; }
-
-        #doneScreen { display: none; text-align: center; padding: 40px 20px; }
-        .done-text { font-size: 2.2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
-        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; }
-        .btn-add { background: #34a853; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 5px; font-size: 0.85em;}
+        .btn-primary:hover { background: #1557b0; }
+        .btn-secondary {
+            background: #5f6368; color: white; padding: 10px 18px; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-add { background: #34a853; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
         .btn-remove { background: #ea4335; color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+        /* IRB DOCUMENT FORMATTING */
+        .irb-document {
+            font-family: 'Times New Roman', Times, serif;
+            color: #000;
+            background: #fff;
+            padding: 0;
+            line-height: 1.35;
+            font-size: 11pt;
+            text-align: left;
+        }
+        
+        .pdf-page-container {
+            padding: 0.4in;
+            box-sizing: border-box;
+            min-height: 9.8in;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .pdf-page-container:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        .irb-header {
+            font-weight: normal;
+            font-size: 11pt;
+            margin-bottom: 12pt;
+        }
+        .irb-rel-line {
+            margin-bottom: 12pt;
+            font-size: 11pt;
+        }
+        .irb-rel-line input {
+            border: none;
+            border-bottom: 1px solid #000;
+            border-radius: 0;
+            padding: 0 4px;
+            width: 250px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+        }
+        .irb-title {
+            font-size: 12.5pt;
+            font-weight: bold;
+            margin-bottom: 8pt;
+        }
+        .irb-meta {
+            margin-bottom: 12pt;
+        }
+        .irb-meta p {
+            margin: 2pt 0;
+        }
+        .irb-h3 {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-top: 10pt;
+            margin-bottom: 4pt;
+        }
+        .irb-document p {
+            margin-top: 0;
+            margin-bottom: 6pt;
+            text-align: justify;
+        }
+        .irb-document ul {
+            margin-top: 0;
+            margin-bottom: 6pt;
+            padding-left: 20pt;
+        }
+        .irb-document li {
+            margin-bottom: 2pt;
+        }
+
+        .irb-sig-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15pt;
+        }
+        .irb-sig-table th, .irb-sig-table td {
+            border: 1px solid #000;
+            padding: 6pt;
+            vertical-align: top;
+            text-align: left;
+            font-size: 10pt;
+        }
+        .irb-sig-table th {
+            font-weight: normal;
+            background-color: #fff;
+        }
+        .irb-sig-table input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 10.5pt;
+            padding: 0;
+            width: 100%;
+        }
+
+        .irb-footer {
+            margin-top: 15pt;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10pt;
+            font-family: 'Times New Roman', Times, serif;
+            border-top: 1px solid #000;
+            padding-top: 4pt;
+        }
+
+        #doneScreen { text-align: center; padding: 20px; }
+        .done-text { font-size: 2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 8px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="formInterface">
+    <!-- STEP 1: DEMOGRAPHIC QUESTIONNAIRE -->
+    <div id="step1" class="step-page active">
         <h1>Demographic Information</h1>
-        <form id="mainForm" onsubmit="handleSubmit(event)">
+        <form id="demographicForm" onsubmit="goToConsent(event)">
             <div class="section-title">1. Basic Information</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">Surname / Last Name</label><input type="text" id="lastName" required></div>
-                <div class="field-group" style="flex: 1; min-width: 200px;"><label class="required">Given Name / First Name</label><input type="text" id="firstName" required></div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 180px;"><label class="required">Surname / Last Name</label><input type="text" id="lastName" required></div>
+                <div class="field-group" style="flex: 1; min-width: 180px;"><label class="required">Given Name / First Name</label><input type="text" id="firstName" required></div>
+                <div class="field-group" style="flex: 1; min-width: 180px;"><label class="required">Email Address</label><input type="email" id="email" required></div>
             </div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="field-group" style="flex: 1; min-width: 150px;"><label class="required">Date of Birth</label><input type="date" id="birthday" required></div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 140px;"><label class="required">Date of Birth</label><input type="date" id="birthday" required></div>
                 <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">Height (cm)</label><input type="number" id="height" required></div>
                 <div class="field-group" style="flex: 1; min-width: 100px;"><label class="required">Weight (kg)</label><input type="number" id="weight" required></div>
             </div>
@@ -70,14 +194,14 @@
             <div class="section-title">2. Birthplace</div>
             <div class="birthplace-row">
                 <div class="field-group"><label class="required">Province / State</label><input type="text" id="bp_province" placeholder="e.g., Sichuan Province" required></div>
-                <div class="field-group"><label class="required">City / County</label><input type="text" id="bp_city" placeholder="e.g., Xichang City, Liangshan Prefecture" required></div>
+                <div class="field-group"><label class="required">City / County</label><input type="text" id="bp_city" placeholder="e.g., Xichang City" required></div>
                 <div class="field-group"><label class="required">Township / Town</label><input type="text" id="bp_town" placeholder="Enter N/A if none" required></div>
                 <div class="field-group"><label class="required">Village / Sub-district</label><input type="text" id="bp_village" placeholder="Enter N/A if none" required></div>
             </div>
 
             <div class="section-title">3. Education & Occupation</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="field-group" style="flex: 1; min-width: 250px;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 220px;">
                     <label class="required">Highest Level of Education</label>
                     <select id="education" required>
                         <option value="">Please select...</option>
@@ -91,9 +215,9 @@
                         <option value="Doctorate (Ph.D.)">Doctorate (Ph.D.)</option>
                         <option value="Other">Other</option>
                     </select>
-                    <input type="text" id="edu_other" placeholder="Please specify your education level..." style="display:none; margin-top:10px;">
+                    <input type="text" id="edu_other" placeholder="Please specify your education level..." style="display:none; margin-top:8px;">
                 </div>
-                <div class="field-group" style="flex: 1; min-width: 250px;"><label class="required">Occupation</label><input type="text" id="occupation" required></div>
+                <div class="field-group" style="flex: 1; min-width: 220px;"><label class="required">Occupation</label><input type="text" id="occupation" required></div>
             </div>
 
             <div class="section-title">4. Language Background</div>
@@ -104,10 +228,7 @@
             <div class="field-group">
                 <label class="required">Other Languages and Proficiency (1-5)</label>
                 <div class="proficiency-hint">
-                    <b>Proficiency Scale:</b><br>
-                    1: Beginner (Simple greetings only) | 2: Elementary (Basic daily conversations)<br>
-                    3: Intermediate (Seamless communication in work/daily life) | 4: Advanced (In-depth discussion/creative writing)<br>
-                    5: Native/Bilingual (Equivalent to native speaker ability)
+                    <b>Proficiency Scale:</b> 1: Beginner | 2: Elementary | 3: Intermediate | 4: Advanced | 5: Native/Bilingual
                 </div>
                 <div id="otherLangContainer"></div>
                 <button type="button" class="btn-add" onclick="addItem('otherLangContainer', 'Language (or N/A)', 'Proficiency')">+ Add Language</button>
@@ -120,18 +241,18 @@
                 <button type="button" class="btn-add" onclick="addItem('cityContainer', 'City (or N/A)', 'Duration (e.g., 3 years; or N/A)')">+ Add Residential History</button>
             </div>
 
-            <div class="section-title">6. Audio Equipment & Recording Setup (if you make changes, let us know)</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="field-group" style="flex: 1; min-width: 200px;">
-                    <label class="required">Listening Device (you must wear headphones or earphones)</label>
+            <div class="section-title">6. Audio Equipment & Recording Setup</div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div class="field-group" style="flex: 1; min-width: 180px;">
+                    <label class="required">Listening Device</label>
                     <select id="audioDevice" required>
                         <option value="">Please select...</option>
                         <option value="Headphones">Headphones (Over-ear / On-ear)</option>
                         <option value="Earphones">Earphones / Earbuds (In-ear)</option>
                     </select>
                 </div>
-                <div class="field-group" style="flex: 1; min-width: 200px;">
-                    <label class="required">Recording Device (a computer is preferred for file uploading)</label>
+                <div class="field-group" style="flex: 1; min-width: 180px;">
+                    <label class="required">Recording Device</label>
                     <select id="recordingDevice" required>
                         <option value="">Please select...</option>
                         <option value="Phone">Phone</option>
@@ -141,28 +262,207 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
-                <div class="field-group" style="flex: 1; min-width: 200px;">
+                <div class="field-group" style="flex: 1; min-width: 180px;">
                     <label>Headphone/Earphone Brand (Optional)</label>
                     <input type="text" id="audioBrand" placeholder="e.g., Sony WH-1000XM4, AirPods Pro">
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">Complete & Export</button>
+            <button type="submit" class="btn-primary">Next: Proceed to Consent Form &rarr;</button>
         </form>
     </div>
 
-    <div id="doneScreen">
-        <div class="done-text">SUCCESS / Completed!</div>
-        <p>1. Data has been exported as a wide-format TSV file (variable names in the first row).</p>
-        <div class="upload-box">
-            <strong>Next Step:</strong> Please upload the downloaded <b>TSV file</b> to the OneDrive folder in the popup window.
+    <!-- STEP 2: INFORMED CONSENT FORM -->
+    <div id="step2" class="step-page">
+        <form id="consentForm" onsubmit="handleFinalSubmit(event)">
+            <div id="consentDocument" class="irb-document">
+                
+                <!-- ================= PAGE 1 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+                        
+                        <div class="irb-rel-line">
+                            If signed by other than the research participant, indicate relationship: <input type="text" id="consent_relationship" placeholder="e.g., Parent, Legal Guardian">
+                        </div>
+
+                        <div class="irb-title">Informed Consent for Research</div>
+                        
+                        <div class="irb-meta">
+                            <p><strong>Study Title:</strong> Language investigation</p>
+                            <p><strong>Principal Investigator:</strong> Yubin Zhang</p>
+                            <p><strong>Department:</strong> Department of Linguistics</p>
+                        </div>
+
+                        <div class="irb-h3">Introduction</div>
+                        <p>This is a research study on how people produce and comprehend language. The purpose of this study is to reveal how humans use and understand different languages and develop research and pedagogical linguistic resources for different languages. The name of this research study is "Language and Speech Investigation in Different Languages". I am seeking your participation in this study.</p>
+                        <p>Your participation is completely voluntary, and I will address your questions or concerns at any point before or during the study. You may be eligible to participate in this study if you meet the following criteria:</p>
+                        <ul>
+                            <li>You are over 18 years old; 2</li>
+                            <li>You are a native speaker of languages like English, Chinese, Spanish or other local languages varieties.</li>
+                        </ul>
+
+                        <p>If you decide to participate in this study, you will be asked to do the following activities:</p>
+                        <ul>
+                            <li>Answer some questions about your language background and/or experience.</li>
+                            <li>Language consultation sessions over zoom: you will be asked about some questions on your language.</li>
+                            <li>Language production and comprehension experiments: Read/listen to sentences [[in some versions: and look at pictures]] and answer questions about them.</li>
+                        </ul>
+
+                        <p>The total duration is expected to be approximately 60-120 minutes per session, conducted daily over a period of 1-2 months. After or before you complete the study, we will meet regularly over zoom or in person for language consultation. During the session, we may also have language production and perception experiments, with each one lasting about around 10-60 minutes. you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00, the exact amount will be calculated based on the study duration in accordance with Prolific's payment.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 1 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 2 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>The results in my research projects will be published through theses, publications, academic presentations, and proceedings. In addition, de-identified speech recordings and related language data collected in this study will be entered into a research data repository to create speech databases or language tools that may be used by other researchers. Participants will not be identified in the results or databases. We will take reasonable measures to protect the security of all your personal information. All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
+
+                        <p>Please take as much time as you need to read the consent form. You may want to discuss it with your family, friends, or your personal doctor. If you find any of the language difficult to understand, please ask questions. If you decide to participate, you will be asked to sign this form. A copy of the signed form will be provided to you for your records.</p>
+
+                        <div class="irb-h3">Risk and Discomforts</div>
+                        <p>The risks of this study are minimal. Because linguistic data may be shared for research purposes, there is a small risk that someone outside the study could gain access to your identity or personal information.</p>
+                        <p>Some questions or tasks may feel uncomfortable or embarrassing. You may skip any question or stop participating at any time without penalty.</p>
+                        <p>Since data are collected from different language groups, some potential community-level risks include misinterpretation or overgeneralization of findings for language groups, e.g., groups that speak different local varieties of Chinese, Spanish, Yi languages, Maya, Yoruba, etc.</p>
+
+                        <div class="irb-h3">Benefits</div>
+                        <p>There are no direct benefits to you from taking part in this study. However, your participation in this study may help us learn about properties of human language. Publicizing language data can help to develop tools and educational resources for different languages and cultures</p>
+
+                        <div class="irb-h3">Privacy/Confidentiality</div>
+                        <p>All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
+                        <p>We will keep your records for this study confidential as far as permitted by law. However, if we are required to do so by law, we will disclose confidential information about you.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 2 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 3 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>Efforts will be made to limit the use and disclosure of your personal information, including research study, to people who are required to review this information. We may publish the information from this study in journals or present it at meetings. If we do, we will not use your name. The University of Southern California's Institutional Review Board (IRB) and Human Research Protection Program (HRPP) may review your records.</p>
+
+                        <p>This study may use using Amazon MTurk, Qualtrics, SurveyMonkey, etc. to collect responses. To understand the privacy and confidentiality limitations associated with these platforms, here we strongly advise you to familiarize yourself with their privacy policy. USC has no jurisdiction or oversight of how data are used or shared on third party applications.</p>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>Amazon Mechanical Turk (MTurk): <a href="https://www.mturk.com/legal" target="_blank">https://www.mturk.com/legal</a></li>
+                            <li>Qualtrics: <a href="https://www.qualtrics.com/privacy-statement/" target="_blank">https://www.qualtrics.com/privacy-statement/</a></li>
+                            <li>SurveyMonkey: <a href="https://www.surveymonkey.com/mp/legal/privacy-policy/" target="_blank">https://www.surveymonkey.com/mp/legal/privacy-policy/</a></li>
+                        </ul>
+
+                        <div class="irb-h3">Future use of data</div>
+                        <p>This study is collecting data from you. We will make your data available for a dataset. Other research studies that may be done in the future may also use this dataset. The research may be about similar conditions to this study. However, research could also be about unrelated, conditions, or other types of research. These studies may be done by researchers at this institution or other institutions, including commercial entities. Our goal is to make more research possible. We plan to keep your data indefinitely. All data will be transferred securely. If you are not comfortable with this, you should not participate in this study.</p>
+                        <p>Your data and collected as part of this research will not be used or distributed for future research studies without your explicit written permission and the written permission from your community or group.</p>
+
+                        <div class="irb-h3">Alternatives</div>
+                        <p>An alternative would be to not participate in this study.</p>
+
+                        <div class="irb-h3">Payments/Compensation</div>
+                        <p>For the language consultation, you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00 per hour, the exact amount will be calculated based on the study duration in accordance with Prolific's payment. For online web-based experiments, if a response looks like it was produced by a bot for example, shows no signs of understanding the task, provides nonsense data or if the task is completed in a time span that is impossibly fast for humans - we may not be able to pay the participant for their time. To avoid bots and multiple submissions, an email address can only be used once to enter the raffle. Participation is voluntary. You may withdraw at any time without penalty; compensation/credit will be prorated when applicable.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 3 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 4 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>Payments for research participation are considered taxable income and participants may be required to pay taxes on this income. If participants are paid $600 or more in total within a calendar year for participation in one or more research studies, the University will report this as income to the IRS and participants may receive an Internal Revenue Service (IRS) Form 1099. This does not include any payments you receive to pay you back for expenses like parking fees.</p>
+
+                        <div class="irb-h3">Cost</div>
+                        <p>There is no cost to this study.</p>
+
+                        <div class="irb-h3">Voluntary Participation</div>
+                        <p>It is your choice whether to participate. If you choose to participate, you may change your mind and leave the study at any time. If you decide not to participate, or choose to end your participation in this study, you will not be penalized or lose any benefits that you are otherwise entitled to.</p>
+
+                        <div class="irb-h3">Withdrawal from Study Instructions</div>
+                        <p>You can withdraw from the study anytime without penalty. You will receive compensation proportional to the time you participate in the study.</p>
+
+                        <div class="irb-h3">Contact Information</div>
+                        <p>If you have questions, concerns, complaints, or think the research has hurt you, talk to the study investigator Yubin Zhang at yubinzha@usc.edu</p>
+                        <p>This research has been reviewed by the USC Institutional Review Board (IRB). The IRB is a research review board that reviews and monitors research studies to protect the rights and welfare of research participants. Contact the IRB if you have questions about your rights as a research participant or you have complaints about the research. You may contact the IRB at (323) 442-0114 or by email at hrpp@usc.edu.</p>
+
+                        <div class="irb-h3">Statement of Consent</div>
+                        <p>I have read (or someone has read to me) the information provided above. I have been given a chance to ask questions. All my questions have been answered. By signing this form, I am agreeing to take part in this study, including the use of my de-identified data in publications and research data repositories as described above.</p>
+
+                        <table class="irb-sig-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Name of Research Participant</th>
+                                    <th style="width: 35%;">Signature</th>
+                                    <th style="width: 25%;">Date Signed<br>(and Time*)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" id="consent_name" style="font-family:'Times New Roman', serif; font-size:10.5pt; font-weight:bold;" required></td>
+                                    <td><input type="text" id="consent_signature" style="font-family:'Brush Script MT', cursive, serif; font-size:13pt;" placeholder="Type name to sign" required></td>
+                                    <td><input type="text" id="consent_date" style="font-family:'Times New Roman', serif; font-size:10.5pt;" readonly></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 4 of 4</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button type="button" class="btn-secondary" onclick="showStep(1)">&larr; Back to Demographics</button>
+                <button type="submit" id="submitBtn" class="btn-primary" style="margin-top:0;">Agree, Complete & Package ZIP</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- STEP 3: DONE & EXPORT / UPLOAD LINK -->
+    <div id="step3" class="step-page">
+        <div id="doneScreen">
+            <div class="done-text">SUCCESS / Completed!</div>
+            <p>Thank you! Your ZIP package containing both the demographic TSV file and signed consent PDF has been downloaded.</p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
+                <button onclick="downloadZipPackage()" class="btn-secondary">Download ZIP Package Again</button>
+            </div>
+
+            <div class="upload-box">
+                <strong>Upload Instructions:</strong> 
+                <p>1. Please upload your downloaded <b>ZIP Package</b> (or unzipped files) to the OneDrive folder using the button below.</p>
+                <button onclick="window.open(ONEDRIVE_LINK, '_blank')" style="background: #1a73e8; color: white; padding: 15px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.05rem; width: 100%;">Open OneDrive Folder to Upload Files</button>
+            </div>
         </div>
-        <button onclick="window.open(ONEDRIVE_LINK, '_blank')" style="background: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Open OneDrive</button>
     </div>
 </div>
 
 <script>
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
+    let globalTSVContent = "";
+    let globalFileName = "";
+    let cachedZipBlob = null;
+
+    function showStep(stepNumber) {
+        document.querySelectorAll('.step-page').forEach(el => el.classList.remove('active'));
+        document.getElementById(`step${stepNumber}`).classList.add('active');
+        window.scrollTo(0, 0);
+    }
 
     document.getElementById('education').addEventListener('change', function() {
         const eduOther = document.getElementById('edu_other');
@@ -197,10 +497,30 @@
         addItem('cityContainer', 'City (or N/A)', 'Duration (e.g., 3 years; or N/A)');
     };
 
-    function handleSubmit(event) {
+    function goToConsent(event) {
         event.preventDefault();
+        const fn = document.getElementById('firstName').value.trim();
+        const ln = document.getElementById('lastName').value.trim();
+        
+        document.getElementById('consent_name').value = `${fn} ${ln}`;
+        document.getElementById('consent_signature').value = `${fn} ${ln}`;
+        document.getElementById('consent_date').value = new Date().toLocaleString();
+        
+        showStep(2);
+    }
+
+    async function handleFinalSubmit(event) {
+        event.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Generating Package... Please wait";
+
+        window.scrollTo(0, 0);
+
         const ln = document.getElementById('lastName').value.trim();
         const fn = document.getElementById('firstName').value.trim();
+        const email = document.getElementById('email').value.trim();
         const dateStr = new Date().toISOString().split('T')[0];
 
         const collectItems = (id) => {
@@ -219,16 +539,17 @@
         }
 
         const headers = [
-            "LastName", "FirstName", "Birthday", "Height_cm", "Weight_kg", 
+            "LastName", "FirstName", "Email", "Birthday", "Height_cm", "Weight_kg", 
             "Province", "City", "Town", "Village", "Education", 
             "Occupation", "L1", "Other_Langs", "Other_Cities", 
-            "Audio_Device", "Recording_Device", "Audio_Brand", "Submit_Date"
+            "Audio_Device", "Recording_Device", "Audio_Brand", "Consent_Relationship", "Submit_Date"
         ];
         
         const audioBrandVal = document.getElementById('audioBrand').value.trim();
+        const consentRel = document.getElementById('consent_relationship').value.trim();
 
         const values = [
-            ln, fn, document.getElementById('birthday').value,
+            ln, fn, email, document.getElementById('birthday').value,
             document.getElementById('height').value, document.getElementById('weight').value,
             document.getElementById('bp_province').value, document.getElementById('bp_city').value,
             document.getElementById('bp_town').value, document.getElementById('bp_village').value,
@@ -238,20 +559,49 @@
             document.getElementById('audioDevice').value,
             document.getElementById('recordingDevice').value,
             audioBrandVal !== "" ? audioBrandVal : "N/A",
+            consentRel !== "" ? consentRel : "Self",
             dateStr
         ];
 
-        let tsvContent = headers.join("\t") + "\n" + values.join("\t");
+        globalTSVContent = headers.join("\t") + "\n" + values.join("\t");
+        globalFileName = `Demographics_${ln}_${fn}`;
 
-        const blob = new Blob(["\ufeff" + tsvContent], { type: 'text/tab-separated-values;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Demographics_${ln}_${fn}.tsv`;
-        link.click();
+        // Generate PDF matching original page divisions
+        const element = document.getElementById('consentDocument');
+        const opt = {
+            margin:       0,
+            filename:     `Signed_Consent_${globalFileName}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, scrollY: 0, scrollX: 0, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+        
+        const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
 
-        document.getElementById('formInterface').style.display = 'none';
-        document.getElementById('doneScreen').style.display = 'block';
+        // Bundle into ZIP package using JSZip
+        const zip = new JSZip();
+        zip.file(`${globalFileName}.tsv`, "\ufeff" + globalTSVContent);
+        zip.file(`Signed_Consent_${globalFileName}.pdf`, pdfBlob);
+
+        cachedZipBlob = await zip.generateAsync({ type: "blob" });
+
+        // Trigger download
+        downloadZipPackage();
+
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Agree, Complete & Package ZIP";
+
+        showStep(3);
         window.open(ONEDRIVE_LINK, '_blank');
+    }
+
+    function downloadZipPackage() {
+        if (!cachedZipBlob) return;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(cachedZipBlob);
+        link.download = `${globalFileName}_Package.zip`;
+        link.click();
     }
 </script>
 </body>

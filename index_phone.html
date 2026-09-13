@@ -28,7 +28,6 @@
         .target-lang { height: 70px; font-size: 1.1rem; border-left: 5px solid #1a73e8; resize: vertical; }
         .trans-lang { height: 60px; font-style: italic; }
 
-        /* Gloss 对齐容器与卡片样式 */
         .gloss-container {
             display: flex;
             flex-wrap: wrap;
@@ -169,11 +168,11 @@
         </div>
 
         <div class="btn-group">
-            <button id="recBtn">Start Recording (Take 1 of 2)</button>
+            <button id="recBtn">Start Recording (Take 1 of 4)</button>
             <button id="nextBtn" disabled>Save & Next</button>
         </div>
         <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
-            ⚠ Record 2 takes before clicking "Save & Next".
+            ⚠ Record 4 takes before clicking "Save & Next".
         </p>
     </div>
 
@@ -207,7 +206,8 @@
 </div>
 
 <script>
-    const TOTAL_SENTENCES = 10;
+    const TOTAL_SENTENCES = 1;
+    const REQUIRED_TAKES = 4;
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
 
     let audioContext, stream, processor, input, audioData = [], sessionData = [];
@@ -218,7 +218,7 @@
     let generatedZipFile = null;
 
     let currentSentenceTakes = [];
-    let savedGlosses = []; // 保存当前句子的 Gloss 数组
+    let savedGlosses = [];
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
@@ -237,11 +237,9 @@
 
     document.getElementById('totalDisplay').textContent = TOTAL_SENTENCES;
 
-    // 监听 Sentence 输入，实时切词并生成 Gloss 对齐卡片
     targetInput.addEventListener('input', updateGlossGrid);
 
     function updateGlossGrid() {
-        // 渲染前暂存现有的输入，防止重新渲染清空已填写的 Gloss
         const currentInputs = glossContainer.querySelectorAll('.gloss-input-cell');
         currentInputs.forEach((inp, idx) => {
             savedGlosses[idx] = inp.value;
@@ -368,8 +366,8 @@
         document.getElementById('count').textContent = sessionData.length;
         const takeNum = currentSentenceTakes.length + 1;
         
-        if (currentSentenceTakes.length < 2) {
-            recBtn.textContent = `Start Recording (Take ${takeNum} of 2)`;
+        if (currentSentenceTakes.length < REQUIRED_TAKES) {
+            recBtn.textContent = `Start Recording (Take ${takeNum} of ${REQUIRED_TAKES})`;
         }
     }
 
@@ -397,18 +395,18 @@
             currentSentenceTakes.push(exportWAV(audioData));
             recBtn.classList.remove('active');
 
-            if (currentSentenceTakes.length < 2) {
+            if (currentSentenceTakes.length < REQUIRED_TAKES) {
                 recBtn.disabled = false;
                 nextBtn.disabled = true;
                 updateProgressDisplay();
                 hintMsg.style.display = "block";
-                hintMsg.textContent = "⚠ Take 1 saved. Click button above to record Take 2.";
+                hintMsg.textContent = `⚠ Take ${currentSentenceTakes.length} saved. Click button above to record Take ${currentSentenceTakes.length + 1}.`;
             } else {
                 recBtn.disabled = true;
                 nextBtn.disabled = false;
-                recBtn.textContent = "2 Takes Recorded ✓";
+                recBtn.textContent = `${REQUIRED_TAKES} Takes Recorded ✓`;
                 hintMsg.style.display = "block";
-                hintMsg.textContent = "⚠ 2 takes complete! Click 'Save & Next' to continue.";
+                hintMsg.textContent = `⚠ ${REQUIRED_TAKES} takes complete! Click 'Save & Next' to continue.`;
             }
         }
     };
@@ -418,9 +416,8 @@
         const target = sanitize(targetInput.value);
         
         if (!target) return alert("Please type the sentence text.");
-        if (currentSentenceTakes.length < 2) return alert("Please record 2 takes before continuing.");
+        if (currentSentenceTakes.length < REQUIRED_TAKES) return alert(`Please record ${REQUIRED_TAKES} takes before continuing.`);
 
-        // 拼接所有 Gloss 格子中的值
         const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
         const combinedGloss = glossCells.map(cell => cell.value.trim() || '*').join(' ');
 
@@ -428,8 +425,7 @@
             target: target,
             gloss: combinedGloss,
             trans: sanitize(document.getElementById('transInput').value),
-            take1: currentSentenceTakes[0],
-            take2: currentSentenceTakes[1]
+            takes: [...currentSentenceTakes]
         });
 
         currentSentenceTakes = [];
@@ -461,13 +457,12 @@
         sessionData.forEach((item, i) => {
             const index = String(i + 1).padStart(3, '0');
             
-            const fileName1 = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take1`;
-            zip.file(`${fileName1}.wav`, item.take1);
-            tsv += `${currentLang}\t${currentSpeaker}\t${fileName1}.wav\t1\t${item.target}\t${item.gloss}\t${item.trans}\n`;
-            
-            const fileName2 = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take2`;
-            zip.file(`${fileName2}.wav`, item.take2);
-            tsv += `${currentLang}\t${currentSpeaker}\t${fileName2}.wav\t2\t${item.target}\t${item.gloss}\t${item.trans}\n`;
+            item.takes.forEach((takeBlob, takeIdx) => {
+                const takeNum = takeIdx + 1;
+                const fileName = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take${takeNum}`;
+                zip.file(`${fileName}.wav`, takeBlob);
+                tsv += `${currentLang}\t${currentSpeaker}\t${fileName}.wav\t${takeNum}\t${item.target}\t${item.gloss}\t${item.trans}\n`;
+            });
         });
 
         zip.file(`Metadata_${currentLang}_${currentSpeaker}_${dateStr}.tsv`, tsv);
