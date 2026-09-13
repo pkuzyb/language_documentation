@@ -9,8 +9,8 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            max-width: 850px; 
-            margin: 20px auto; 
+            max-width: 900px; 
+            margin: 30px auto; 
             background: #f4f6f9; 
             color: #333; 
             padding: 0 15px;
@@ -18,12 +18,15 @@
 
         .container { 
             background: white; 
-            padding: 25px; 
+            padding: 35px; 
             border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
             box-sizing: border-box; 
             width: 100%;
         }
+
+        .step-page { display: none; }
+        .step-page.active { display: block; }
 
         /* IRB DOCUMENT FORMATTING */
         .irb-document {
@@ -165,173 +168,217 @@
         .btn-primary:hover { 
             background: #1557b0; 
         }
+
+        .btn-secondary {
+            background: #5f6368; 
+            color: white; 
+            padding: 10px 18px; 
+            border: none;
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 0.9rem;
+        }
+
+        #doneScreen { text-align: center; padding: 20px; }
+        .done-text { font-size: 2rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 8px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <form id="consentForm" onsubmit="generatePDF(event)">
-        <div id="consentDocument" class="irb-document">
+    <!-- STEP 1: CONSENT FORM -->
+    <div id="step1" class="step-page active">
+        <form id="consentForm" onsubmit="handleFinalSubmit(event)">
+            <div id="consentDocument" class="irb-document">
+                
+                <!-- ================= PAGE 1 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+                        
+                        <div class="irb-rel-line">
+                            If signed by other than the research participant, indicate relationship: <input type="text" id="consent_relationship" placeholder="e.g., Parent, Legal Guardian">
+                        </div>
+
+                        <div class="irb-title">Informed Consent for Research</div>
+                        
+                        <div class="irb-meta">
+                            <p><strong>Study Title:</strong> Language investigation</p>
+                            <p><strong>Principal Investigator:</strong> Yubin Zhang</p>
+                            <p><strong>Department:</strong> Department of Linguistics</p>
+                        </div>
+
+                        <div class="irb-h3">Introduction</div>
+                        <p>This is a research study on how people produce and comprehend language. The purpose of this study is to reveal how humans use and understand different languages and develop research and pedagogical linguistic resources for different languages. The name of this research study is "Language and Speech Investigation in Different Languages". I am seeking your participation in this study.</p>
+                        <p>Your participation is completely voluntary, and I will address your questions or concerns at any point before or during the study. You may be eligible to participate in this study if you meet the following criteria:</p>
+                        <ul>
+                            <li>You are over 18 years old; 2</li>
+                            <li>You are a native speaker of languages like English, Chinese, Spanish or other local languages varieties.</li>
+                        </ul>
+
+                        <p>If you decide to participate in this study, you will be asked to do the following activities:</p>
+                        <ul>
+                            <li>Answer some questions about your language background and/or experience.</li>
+                            <li>Language consultation sessions over zoom: you will be asked about some questions on your language.</li>
+                            <li>Language production and comprehension experiments: Read/listen to sentences [[in some versions: and look at pictures]] and answer questions about them.</li>
+                        </ul>
+
+                        <p>The total duration is expected to be approximately 60-120 minutes per session, conducted daily over a period of 1-2 months. After or before you complete the study, we will meet regularly over zoom or in person for language consultation. During the session, we may also have language production and perception experiments, with each one lasting about around 10-60 minutes. you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00, the exact amount will be calculated based on the study duration in accordance with Prolific's payment.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 1 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 2 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>The results in my research projects will be published through theses, publications, academic presentations, and proceedings. In addition, de-identified speech recordings and related language data collected in this study will be entered into a research data repository to create speech databases or language tools that may be used by other researchers. Participants will not be identified in the results or databases. We will take reasonable measures to protect the security of all your personal information. All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
+
+                        <p>Please take as much time as you need to read the consent form. You may want to discuss it with your family, friends, or your personal doctor. If you find any of the language difficult to understand, please ask questions. If you decide to participate, you will be asked to sign this form. A copy of the signed form will be provided to you for your records.</p>
+
+                        <div class="irb-h3">Risk and Discomforts</div>
+                        <p>The risks of this study are minimal. Because linguistic data may be shared for research purposes, there is a small risk that someone outside the study could gain access to your identity or personal information.</p>
+                        <p>Some questions or tasks may feel uncomfortable or embarrassing. You may skip any question or stop participating at any time without penalty.</p>
+                        <p>Since data are collected from different language groups, some potential community-level risks include misinterpretation or overgeneralization of findings for language groups, e.g., groups that speak different local varieties of Chinese, Spanish, Yi languages, Maya, Yoruba, etc.</p>
+
+                        <div class="irb-h3">Benefits</div>
+                        <p>There are no direct benefits to you from taking part in this study. However, your participation in this study may help us learn about properties of human language. Publicizing language data can help to develop tools and educational resources for different languages and cultures</p>
+
+                        <div class="irb-h3">Privacy/Confidentiality</div>
+                        <p>All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
+                        <p>We will keep your records for this study confidential as far as permitted by law. However, if we are required to do so by law, we will disclose confidential information about you.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 2 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 3 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>Efforts will be made to limit the use and disclosure of your personal information, including research study, to people who are required to review this information. We may publish the information from this study in journals or present it at meetings. If we do, we will not use your name. The University of Southern California's Institutional Review Board (IRB) and Human Research Protection Program (HRPP) may review your records.</p>
+
+                        <p>This study may use using Amazon MTurk, Qualtrics, SurveyMonkey, etc. to collect responses. To understand the privacy and confidentiality limitations associated with these platforms, here we strongly advise you to familiarize yourself with their privacy policy. USC has no jurisdiction or oversight of how data are used or shared on third party applications.</p>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>Amazon Mechanical Turk (MTurk): <a href="https://www.mturk.com/legal" target="_blank">https://www.mturk.com/legal</a></li>
+                            <li>Qualtrics: <a href="https://www.qualtrics.com/privacy-statement/" target="_blank">https://www.qualtrics.com/privacy-statement/</a></li>
+                            <li>SurveyMonkey: <a href="https://www.surveymonkey.com/mp/legal/privacy-policy/" target="_blank">https://www.surveymonkey.com/mp/legal/privacy-policy/</a></li>
+                        </ul>
+
+                        <div class="irb-h3">Future use of data</div>
+                        <p>This study is collecting data from you. We will make your data available for a dataset. Other research studies that may be done in the future may also use this dataset. The research may be about similar conditions to this study. However, research could also be about unrelated, conditions, or other types of research. These studies may be done by researchers at this institution or other institutions, including commercial entities. Our goal is to make more research possible. We plan to keep your data indefinitely. All data will be transferred securely. If you are not comfortable with this, you should not participate in this study.</p>
+                        <p>Your data and collected as part of this research will not be used or distributed for future research studies without your explicit written permission and the written permission from your community or group.</p>
+
+                        <div class="irb-h3">Alternatives</div>
+                        <p>An alternative would be to not participate in this study.</p>
+
+                        <div class="irb-h3">Payments/Compensation</div>
+                        <p>For the language consultation, you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00 per hour, the exact amount will be calculated based on the study duration in accordance with Prolific's payment. For online web-based experiments, if a response looks like it was produced by a bot for example, shows no signs of understanding the task, provides nonsense data or if the task is completed in a time span that is impossibly fast for humans - we may not be able to pay the participant for their time. To avoid bots and multiple submissions, an email address can only be used once to enter the raffle. Participation is voluntary. You may withdraw at any time without penalty; compensation/credit will be prorated when applicable.</p>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 3 of 4</span>
+                    </div>
+                </div>
+
+                <!-- ================= PAGE 4 ================= -->
+                <div class="pdf-page-container">
+                    <div>
+                        <div class="irb-header">University of Southern California, Department of Linguistics</div>
+
+                        <p>Payments for research participation are considered taxable income and participants may be required to pay taxes on this income. If participants are paid $600 or more in total within a calendar year for participation in one or more research studies, the University will report this as income to the IRS and participants may receive an Internal Revenue Service (IRS) Form 1099. This does not include any payments you receive to pay you back for expenses like parking fees.</p>
+
+                        <div class="irb-h3">Cost</div>
+                        <p>There is no cost to this study.</p>
+
+                        <div class="irb-h3">Voluntary Participation</div>
+                        <p>It is your choice whether to participate. If you choose to participate, you may change your mind and leave the study at any time. If you decide not to participate, or choose to end your participation in this study, you will not be penalized or lose any benefits that you are otherwise entitled to.</p>
+
+                        <div class="irb-h3">Withdrawal from Study Instructions</div>
+                        <p>You can withdraw from the study anytime without penalty. You will receive compensation proportional to the time you participate in the study.</p>
+
+                        <div class="irb-h3">Contact Information</div>
+                        <p>If you have questions, concerns, complaints, or think the research has hurt you, talk to the study investigator Yubin Zhang at yubinzha@usc.edu</p>
+                        <p>This research has been reviewed by the USC Institutional Review Board (IRB). The IRB is a research review board that reviews and monitors research studies to protect the rights and welfare of research participants. Contact the IRB if you have questions about your rights as a research participant or you have complaints about the research. You may contact the IRB at (323) 442-0114 or by email at hrpp@usc.edu.</p>
+
+                        <div class="irb-h3">Statement of Consent</div>
+                        <p>I have read (or someone has read to me) the information provided above. I have been given a chance to ask questions. All my questions have been answered. By signing this form, I am agreeing to take part in this study, including the use of my de-identified data in publications and research data repositories as described above.</p>
+
+                        <table class="irb-sig-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Name of Research Participant</th>
+                                    <th style="width: 35%;">Signature</th>
+                                    <th style="width: 25%;">Date Signed<br>(and Time*)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" id="consent_name" style="font-family:'Times New Roman', serif; font-size:10.5pt; font-weight:bold;" placeholder="Print full name" required></td>
+                                    <td><input type="text" id="consent_signature" style="font-family:'Brush Script MT', cursive, serif; font-size:13pt;" placeholder="Type name to sign" required></td>
+                                    <td><input type="text" id="consent_date" style="font-family:'Times New Roman', serif; font-size:10.5pt;" readonly></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="irb-footer">
+                        <span>Version Date: 02/10/2026</span>
+                        <span>Page 4 of 4</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-primary">Agree, Complete & Generate PDF</button>
+        </form>
+    </div>
+
+    <!-- STEP 2: DONE & UPLOAD LINK -->
+    <div id="step2" class="step-page">
+        <div id="doneScreen">
+            <div class="done-text">SUCCESS / Completed!</div>
+            <p>Thank you! Your signed consent PDF has been generated and downloaded.</p>
             
-            <!-- ================= PAGE 1 ================= -->
-            <div class="pdf-page-container">
-                <div>
-                    <div class="irb-header">University of Southern California, Department of Linguistics</div>
-                    
-                    <div class="irb-rel-line">
-                        If signed by other than the research participant, indicate relationship: <input type="text" id="consent_relationship" placeholder="e.g., Parent, Legal Guardian">
-                    </div>
-
-                    <div class="irb-title">Informed Consent for Research</div>
-                    
-                    <div class="irb-meta">
-                        <p><strong>Study Title:</strong> Language investigation</p>
-                        <p><strong>Principal Investigator:</strong> Yubin Zhang</p>
-                        <p><strong>Department:</strong> Department of Linguistics</p>
-                    </div>
-
-                    <div class="irb-h3">Introduction</div>
-                    <p>This is a research study on how people produce and comprehend language. The purpose of this study is to reveal how humans use and understand different languages and develop research and pedagogical linguistic resources for different languages. The name of this research study is "Language and Speech Investigation in Different Languages". I am seeking your participation in this study.</p>
-                    <p>Your participation is completely voluntary, and I will address your questions or concerns at any point before or during the study. You may be eligible to participate in this study if you meet the following criteria:</p>
-                    <ul>
-                        <li>You are over 18 years old; 2</li>
-                        <li>You are a native speaker of languages like English, Chinese, Spanish or other local languages varieties.</li>
-                    </ul>
-
-                    <p>If you decide to participate in this study, you will be asked to do the following activities:</p>
-                    <ul>
-                        <li>Answer some questions about your language background and/or experience.</li>
-                        <li>Language consultation sessions over zoom: you will be asked about some questions on your language.</li>
-                        <li>Language production and comprehension experiments: Read/listen to sentences [[in some versions: and look at pictures]] and answer questions about them.</li>
-                    </ul>
-
-                    <p>The total duration is expected to be approximately 60-120 minutes per session, conducted daily over a period of 1-2 months. After or before you complete the study, we will meet regularly over zoom or in person for language consultation. During the session, we may also have language production and perception experiments, with each one lasting about around 10-60 minutes. you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00, the exact amount will be calculated based on the study duration in accordance with Prolific's payment.</p>
-                </div>
-
-                <div class="irb-footer">
-                    <span>Version Date: 02/10/2026</span>
-                    <span>Page 1 of 4</span>
-                </div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0;">
+                <button onclick="downloadPDF()" class="btn-secondary">Download PDF Again</button>
             </div>
 
-            <!-- ================= PAGE 2 ================= -->
-            <div class="pdf-page-container">
-                <div>
-                    <div class="irb-header">University of Southern California, Department of Linguistics</div>
-
-                    <p>The results in my research projects will be published through theses, publications, academic presentations, and proceedings. In addition, de-identified speech recordings and related language data collected in this study will be entered into a research data repository to create speech databases or language tools that may be used by other researchers. Participants will not be identified in the results or databases. We will take reasonable measures to protect the security of all your personal information. All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
-
-                    <p>Please take as much time as you need to read the consent form. You may want to discuss it with your family, friends, or your personal doctor. If you find any of the language difficult to understand, please ask questions. If you decide to participate, you will be asked to sign this form. A copy of the signed form will be provided to you for your records.</p>
-
-                    <div class="irb-h3">Risk and Discomforts</div>
-                    <p>The risks of this study are minimal. Because linguistic data may be shared for research purposes, there is a small risk that someone outside the study could gain access to your identity or personal information.</p>
-                    <p>Some questions or tasks may feel uncomfortable or embarrassing. You may skip any question or stop participating at any time without penalty.</p>
-                    <p>Since data are collected from different language groups, some potential community-level risks include misinterpretation or overgeneralization of findings for language groups, e.g., groups that speak different local varieties of Chinese, Spanish, Yi languages, Maya, Yoruba, etc.</p>
-
-                    <div class="irb-h3">Benefits</div>
-                    <p>There are no direct benefits to you from taking part in this study. However, your participation in this study may help us learn about properties of human language. Publicizing language data can help to develop tools and educational resources for different languages and cultures</p>
-
-                    <div class="irb-h3">Privacy/Confidentiality</div>
-                    <p>All data will be de-identified before any publication, presentation, or inclusion in a data repository. Each participant will be assigned a unique code. A separate, secure file linking the codes to the data repository will be retained, and it will only be accessed if a participant requests to withdraw or have their data deleted.</p>
-                    <p>We will keep your records for this study confidential as far as permitted by law. However, if we are required to do so by law, we will disclose confidential information about you.</p>
-                </div>
-
-                <div class="irb-footer">
-                    <span>Version Date: 02/10/2026</span>
-                    <span>Page 2 of 4</span>
-                </div>
+            <div class="upload-box">
+                <strong>Upload Instructions:</strong> 
+                <p>1. Please upload your downloaded <b>Signed Consent PDF</b> to the OneDrive folder using the button below.</p>
+                <button onclick="window.open(ONEDRIVE_LINK, '_blank')" style="background: #1a73e8; color: white; padding: 15px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.05rem; width: 100%;">Open OneDrive Folder to Upload Files</button>
             </div>
-
-            <!-- ================= PAGE 3 ================= -->
-            <div class="pdf-page-container">
-                <div>
-                    <div class="irb-header">University of Southern California, Department of Linguistics</div>
-
-                    <p>Efforts will be made to limit the use and disclosure of your personal information, including research study, to people who are required to review this information. We may publish the information from this study in journals or present it at meetings. If we do, we will not use your name. The University of Southern California's Institutional Review Board (IRB) and Human Research Protection Program (HRPP) may review your records.</p>
-
-                    <p>This study may use using Amazon MTurk, Qualtrics, SurveyMonkey, etc. to collect responses. To understand the privacy and confidentiality limitations associated with these platforms, here we strongly advise you to familiarize yourself with their privacy policy. USC has no jurisdiction or oversight of how data are used or shared on third party applications.</p>
-                    <ul style="list-style-type: none; padding-left: 0;">
-                        <li>Amazon Mechanical Turk (MTurk): <a href="https://www.mturk.com/legal" target="_blank">https://www.mturk.com/legal</a></li>
-                        <li>Qualtrics: <a href="https://www.qualtrics.com/privacy-statement/" target="_blank">https://www.qualtrics.com/privacy-statement/</a></li>
-                        <li>SurveyMonkey: <a href="https://www.surveymonkey.com/mp/legal/privacy-policy/" target="_blank">https://www.surveymonkey.com/mp/legal/privacy-policy/</a></li>
-                    </ul>
-
-                    <div class="irb-h3">Future use of data</div>
-                    <p>This study is collecting data from you. We will make your data available for a dataset. Other research studies that may be done in the future may also use this dataset. The research may be about similar conditions to this study. However, research could also be about unrelated, conditions, or other types of research. These studies may be done by researchers at this institution or other institutions, including commercial entities. Our goal is to make more research possible. We plan to keep your data indefinitely. All data will be transferred securely. If you are not comfortable with this, you should not participate in this study.</p>
-                    <p>Your data and collected as part of this research will not be used or distributed for future research studies without your explicit written permission and the written permission from your community or group.</p>
-
-                    <div class="irb-h3">Alternatives</div>
-                    <p>An alternative would be to not participate in this study.</p>
-
-                    <div class="irb-h3">Payments/Compensation</div>
-                    <p>For the language consultation, you will receive a digital gift card worth range between approximately $15 or $15 cash per hour; the amount will be computed relative to the duration of the study. For specific language experiments, you will receive payment approximately $2.50-$12.00 per hour, the exact amount will be calculated based on the study duration in accordance with Prolific's payment. For online web-based experiments, if a response looks like it was produced by a bot for example, shows no signs of understanding the task, provides nonsense data or if the task is completed in a time span that is impossibly fast for humans - we may not be able to pay the participant for their time. To avoid bots and multiple submissions, an email address can only be used once to enter the raffle. Participation is voluntary. You may withdraw at any time without penalty; compensation/credit will be prorated when applicable.</p>
-                </div>
-
-                <div class="irb-footer">
-                    <span>Version Date: 02/10/2026</span>
-                    <span>Page 3 of 4</span>
-                </div>
-            </div>
-
-            <!-- ================= PAGE 4 ================= -->
-            <div class="pdf-page-container">
-                <div>
-                    <div class="irb-header">University of Southern California, Department of Linguistics</div>
-
-                    <p>Payments for research participation are considered taxable income and participants may be required to pay taxes on this income. If participants are paid $600 or more in total within a calendar year for participation in one or more research studies, the University will report this as income to the IRS and participants may receive an Internal Revenue Service (IRS) Form 1099. This does not include any payments you receive to pay you back for expenses like parking fees.</p>
-
-                    <div class="irb-h3">Cost</div>
-                    <p>There is no cost to this study.</p>
-
-                    <div class="irb-h3">Voluntary Participation</div>
-                    <p>It is your choice whether to participate. If you choose to participate, you may change your mind and leave the study at any time. If you decide not to participate, or choose to end your participation in this study, you will not be penalized or lose any benefits that you are otherwise entitled to.</p>
-
-                    <div class="irb-h3">Withdrawal from Study Instructions</div>
-                    <p>You can withdraw from the study anytime without penalty. You will receive compensation proportional to the time you participate in the study.</p>
-
-                    <div class="irb-h3">Contact Information</div>
-                    <p>If you have questions, concerns, complaints, or think the research has hurt you, talk to the study investigator Yubin Zhang at yubinzha@usc.edu</p>
-                    <p>This research has been reviewed by the USC Institutional Review Board (IRB). The IRB is a research review board that reviews and monitors research studies to protect the rights and welfare of research participants. Contact the IRB if you have questions about your rights as a research participant or you have complaints about the research. You may contact the IRB at (323) 442-0114 or by email at hrpp@usc.edu.</p>
-
-                    <div class="irb-h3">Statement of Consent</div>
-                    <p>I have read (or someone has read to me) the information provided above. I have been given a chance to ask questions. All my questions have been answered. By signing this form, I am agreeing to take part in this study, including the use of my de-identified data in publications and research data repositories as described above.</p>
-
-                    <table class="irb-sig-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 40%;">Name of Research Participant</th>
-                                <th style="width: 35%;">Signature</th>
-                                <th style="width: 25%;">Date Signed<br>(and Time*)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="text" id="consent_name" style="font-family:'Times New Roman', serif; font-size:10.5pt; font-weight:bold;" placeholder="Print full name" required></td>
-                                <td><input type="text" id="consent_signature" style="font-family:'Brush Script MT', cursive, serif; font-size:13pt;" placeholder="Type name to sign" required></td>
-                                <td><input type="text" id="consent_date" style="font-family:'Times New Roman', serif; font-size:10.5pt;" readonly></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="irb-footer">
-                    <span>Version Date: 02/10/2026</span>
-                    <span>Page 4 of 4</span>
-                </div>
-            </div>
-
         </div>
-
-        <button type="submit" id="submitBtn" class="btn-primary">Download Signed Consent Form (PDF)</button>
-    </form>
+    </div>
 </div>
 
 <script>
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
+    let generatedFileName = "";
+
     window.onload = function() {
         document.getElementById('consent_date').value = new Date().toLocaleString();
     };
 
-    async function generatePDF(event) {
+    function showStep(stepNumber) {
+        document.querySelectorAll('.step-page').forEach(el => el.classList.remove('active'));
+        document.getElementById(`step${stepNumber}`).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    async function handleFinalSubmit(event) {
         event.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
@@ -342,11 +389,12 @@
 
         const nameVal = document.getElementById('consent_name').value.trim() || "Participant";
         const sanitizedName = nameVal.replace(/[^a-zA-Z0-9]/g, "_");
+        generatedFileName = `Signed_Consent_${sanitizedName}.pdf`;
 
         const element = document.getElementById('consentDocument');
         const opt = {
             margin:       0,
-            filename:     `Signed_Consent_${sanitizedName}.pdf`,
+            filename:     generatedFileName,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, scrollY: 0, scrollX: 0, useCORS: true },
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
@@ -356,7 +404,23 @@
         await html2pdf().set(opt).from(element).save();
 
         submitBtn.disabled = false;
-        submitBtn.innerText = "Download Signed Consent Form (PDF)";
+        submitBtn.innerText = "Agree, Complete & Generate PDF";
+
+        showStep(2);
+        window.open(ONEDRIVE_LINK, '_blank');
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('consentDocument');
+        const opt = {
+            margin:       0,
+            filename:     generatedFileName || "Signed_Consent.pdf",
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, scrollY: 0, scrollX: 0, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+        html2pdf().set(opt).from(element).save();
     }
 </script>
 </body>
