@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sentence_Write_Recording</title>
+    <title>Speech Data Collection System</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="stimuli.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 850px; margin: 0 auto; background: #f0f2f5; color: #333; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 900px; margin: 0 auto; background: #f0f2f5; color: #333; padding: 20px; }
         .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         h1 { color: #1a73e8; margin-bottom: 20px; font-size: 1.5rem; }
         
         .field-group { margin-bottom: 15px; text-align: left; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 0.9em; }
         
-        input[type="text"], textarea, select { 
+        input[type="text"], select { 
             width: 100%; padding: 12px; border: 2px solid #ddd; 
             border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: white;
         }
@@ -24,65 +25,30 @@
         #volumeBar { background: #34a853; width: 0%; height: 100%; transition: width 0.1s ease; }
         #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
         
-        #recordingInterface { display: none; margin-top: 20px; }
-        .target-lang { height: 70px; font-size: 1.1rem; border-left: 5px solid #1a73e8; resize: vertical; }
-        .trans-lang { height: 60px; font-style: italic; }
+        #experimentArea { display: none; margin-top: 20px; }
+        .display-card { background: #fafbfc; border: 2px solid #eef2f7; padding: 40px 20px; margin: 20px 0; border-radius: 15px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; }
+        #stimuliText { font-size: 2.2rem; font-weight: bold; margin-bottom: 15px; line-height: 1.5; color: #111; }
+        #translationText { color: #666; font-style: italic; font-size: 1.2rem; border-top: 1px solid #eee; padding-top: 15px; }
 
-        .gloss-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 12px;
-            background: #fafafa;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            min-height: 75px;
-            align-items: flex-start;
-        }
-        .gloss-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #ffffff;
-            border: 1px solid #1a73e8;
-            border-radius: 6px;
-            padding: 6px 8px;
-            min-width: 70px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .gloss-card .word-tag {
-            font-weight: bold;
-            color: #1a73e8;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
-            word-break: break-all;
-            text-align: center;
-        }
-        .gloss-card input {
-            padding: 4px 6px;
-            font-size: 0.85rem;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 100%;
-        }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
+        button { padding: 15px 20px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 200px; }
 
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
-        button { padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 250px; }
-
-        #startSessionBtn { background: #1a73e8; color: white; }
-        #confirmMicBtn { background: #34a853; color: white; margin-top: 15px; }
+        #startSessionBtn { background: #1a73e8; color: white; max-width: 320px; }
+        #confirmMicBtn { background: #34a853; color: white; margin-top: 15px; max-width: 320px; }
         #confirmMicBtn:disabled { background: #ccc; cursor: not-allowed; }
         
         #recBtn { background: #ea4335; color: white; }
         #recBtn.active { background: #c5221f; animation: pulse 1.5s infinite; }
         #recBtn:disabled { background: #ccc !important; color: #888; cursor: not-allowed; border: 1px solid #bbb; }
 
-        #redoBtn { background: #fbbc04; color: #202124; }
-        #redoBtn:disabled { background: #eee; color: #aaa; cursor: default; }
-
         #nextBtn { background: #1a73e8; color: white; }
         #nextBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
+        #redoTakeBtn { background: #f2994a; color: white; }
+        #redoTakeBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
+        .progress-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #555; }
+        #hintMsg { color: #34a853; font-size: 0.85em; margin-top: 15px; display: none; font-weight: bold; }
 
         #doneScreen { display: none; padding: 20px 10px; }
         .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
@@ -110,17 +76,17 @@
 <body>
 
 <div class="container">
-    <h1 id="mainTitle">Sentence_Write_Recording</h1>
-    
+    <h1 id="mainTitle">Speech data task</h1>
+
     <!-- Step 1: Speaker Info -->
     <div id="setupInterface" class="speaker-box">
         <div class="field-group">
             <label>Language</label>
-            <input type="text" id="speakerLang" placeholder="Enter Language...">
+            <input type="text" id="speakerLang" placeholder="e.g., Mandarin">
         </div>
         <div class="field-group">
             <label>Speaker Name</label>
-            <input type="text" id="speakerName" placeholder="Enter Name...">
+            <input type="text" id="speakerName" placeholder="e.g., Subject_01">
         </div>
         <div class="field-group">
             <label>Are you wearing headphones?</label>
@@ -138,7 +104,8 @@
                 <option value="no">No</option>
             </select>
         </div>
-        <button id="startSessionBtn">Start Session</button>
+        <p id="dataCheck" style="margin-top:15px; font-weight:bold; text-align:left;"></p>
+        <button id="startSessionBtn" style="margin-top:10px;">Start Session</button>
     </div>
 
     <!-- Step 2: Loudness/Mic Check Screen -->
@@ -153,32 +120,23 @@
     </div>
 
     <!-- Step 3: Recording Interface -->
-    <div id="recordingInterface">
-        <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / <span id="totalDisplay"></span></div>
+    <div id="experimentArea">
+        <div class="progress-info">
+            <span>Speaker: <b id="displayName"></b></span>
+            <span>Progress: <b id="progressText"></b></span>
+        </div>
 
-        <div class="field-group">
-            <label>Sentence (separate words with spaces)</label>
-            <textarea id="targetInput" class="target-lang" placeholder="Type sentence here separated by spaces..."></textarea>
-        </div>
-        <div class="field-group">
-            <label>Gloss (Auto-aligned)</label>
-            <div id="glossContainer" class="gloss-container">
-                <span style="color:#aaa; font-size:0.85rem; padding: 10px;">Type words above to generate aligned gloss boxes...</span>
-            </div>
-        </div>
-        <div class="field-group">
-            <label>Translation</label>
-            <textarea id="transInput" class="trans-lang"></textarea>
+        <div class="display-card">
+            <div id="stimuliText"></div>
+            <div id="translationText"></div>
         </div>
 
         <div class="btn-group">
-            <button id="recBtn">Start Recording (Take 1 of 4)</button>
+            <button id="recBtn">Start Recording (Take 1 / 2)</button>
             <button id="nextBtn" disabled>Save & Next</button>
-            <button id="redoBtn" disabled>Redo Last Take</button>
+            <button id="redoTakeBtn" disabled>Redo Last Take</button>
         </div>
-        <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
-            ⚠ Record 4 takes before clicking "Save & Next".
-        </p>
+        <p id="hintMsg">✔ Both takes complete! Click "Save & Next" to continue.</p>
     </div>
 
     <!-- Step 4: Final Screen -->
@@ -211,78 +169,27 @@
 </div>
 
 <script>
-    const TOTAL_SENTENCES = 10;
-    const REQUIRED_TAKES = 4;
     const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
-
-    let audioContext, stream, processor, input, audioData = [], sessionData = [];
-    let currentSpeaker = "";
-    let currentLang = "";
+    let currentIndex = 0, currentTake = 1, totalTakes = 2;
+    let audioContext, stream, processor, audioData = [], currentItemTakes = [], results = [];
+    let currentSpeaker = "", currentLang = "";
     let checkAnimationId;
     const sampleRate = 44100;
     let generatedZipFile = null;
 
-    let currentSentenceTakes = [];
-    let savedGlosses = [];
-
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
-    const recordingUI = document.getElementById('recordingInterface');
+    const recordingUI = document.getElementById('experimentArea');
     const doneUI = document.getElementById('doneScreen');
+    
     const recBtn = document.getElementById('recBtn');
-    const redoBtn = document.getElementById('redoBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const redoTakeBtn = document.getElementById('redoTakeBtn');
     const hintMsg = document.getElementById('hintMsg');
     const volumeBar = document.getElementById('volumeBar');
     const volumeStatus = document.getElementById('volumeStatus');
     const confirmMicBtn = document.getElementById('confirmMicBtn');
     const shareFileBtn = document.getElementById('shareFileBtn');
-
-    const targetInput = document.getElementById('targetInput');
-    const glossContainer = document.getElementById('glossContainer');
-
-    document.getElementById('totalDisplay').textContent = TOTAL_SENTENCES;
-
-    targetInput.addEventListener('input', updateGlossGrid);
-
-    function updateGlossGrid() {
-        const currentInputs = glossContainer.querySelectorAll('.gloss-input-cell');
-        currentInputs.forEach((inp, idx) => {
-            savedGlosses[idx] = inp.value;
-        });
-
-        const text = targetInput.value.replace(/[\r\n]+/g, ' ').trim();
-        const words = text ? text.split(/\s+/) : [];
-
-        glossContainer.innerHTML = '';
-
-        if (words.length === 0) {
-            glossContainer.innerHTML = '<span style="color:#aaa; font-size:0.85rem; padding:10px;">Type words above to generate aligned gloss boxes...</span>';
-            return;
-        }
-
-        words.forEach((word, index) => {
-            const card = document.createElement('div');
-            card.className = 'gloss-card';
-
-            const wordLabel = document.createElement('div');
-            wordLabel.className = 'word-tag';
-            wordLabel.textContent = word;
-
-            const glossInput = document.createElement('input');
-            glossInput.type = 'text';
-            glossInput.className = 'gloss-input-cell';
-            glossInput.placeholder = 'gloss';
-            glossInput.value = savedGlosses[index] || '';
-            glossInput.oninput = (e) => {
-                savedGlosses[index] = e.target.value;
-            };
-
-            card.appendChild(wordLabel);
-            card.appendChild(glossInput);
-            glossContainer.appendChild(card);
-        });
-    }
 
     function getFormattedDate() {
         const d = new Date();
@@ -292,6 +199,18 @@
         return `${year}-${month}-${day}`;
     }
 
+    window.onload = () => {
+        const check = document.getElementById('dataCheck');
+        if (typeof stimuliData !== 'undefined' && stimuliData.length > 0) {
+            check.innerText = `✅ Stimuli Loaded: ${stimuliData.length} items (${stimuliData.length * totalTakes} total recordings).`;
+            check.style.color = "#34a853";
+        } else {
+            check.innerText = "❌ Error: stimuli.js not found.";
+            check.style.color = "#ea4335";
+            document.getElementById('startSessionBtn').disabled = true;
+        }
+    };
+
     document.getElementById('startSessionBtn').onclick = async () => {
         const lang = document.getElementById('speakerLang').value.trim();
         const name = document.getElementById('speakerName').value.trim();
@@ -299,14 +218,14 @@
         const hasGoodEnv = document.getElementById('envCheck').value;
 
         if (!lang) return alert("Please enter the language.");
-        if (!name) return alert("Please enter your name.");
+        if (!name) return alert("Please enter Speaker ID / Name.");
         if (hasHeadphones !== "yes") return alert("You must wear headphones to proceed. Please plug them in and select 'Yes'.");
         if (hasGoodEnv !== "yes") return alert("A quiet acoustic environment is required to proceed. Please find a quiet space and select 'Yes'.");
 
         currentLang = lang.replace(/\s+/g, '_');
         currentSpeaker = name.replace(/\s+/g, '_');
         document.getElementById('displayName').textContent = `${currentSpeaker} (${currentLang})`;
-        
+
         setupUI.style.display = "none";
         micCheckUI.style.display = "block";
         await runLoudnessCheck();
@@ -356,7 +275,7 @@
             updateMeter();
             
         } catch (err) {
-            alert("Microphone access denied. Please allow microphone access in your mobile browser settings.");
+            alert("Microphone access denied. Please allow microphone access in your browser settings.");
             console.error(err);
         }
     }
@@ -365,18 +284,24 @@
         cancelAnimationFrame(checkAnimationId);
         micCheckUI.style.display = "none";
         recordingUI.style.display = "block";
-        updateProgressDisplay();
+        showTrial();
     };
 
-    function updateProgressDisplay() {
-        document.getElementById('count').textContent = sessionData.length;
-        const takeNum = currentSentenceTakes.length + 1;
+    function showTrial() {
+        const item = stimuliData[currentIndex];
+        currentTake = 1;
+        currentItemTakes = [];
         
-        if (currentSentenceTakes.length < REQUIRED_TAKES) {
-            recBtn.textContent = `Start Recording (Take ${takeNum} of ${REQUIRED_TAKES})`;
-        }
-
-        redoBtn.disabled = (currentSentenceTakes.length === 0);
+        document.getElementById('stimuliText').innerText = item.s;
+        document.getElementById('translationText').innerText = item.en || item.t;
+        document.getElementById('progressText').innerText = `${currentIndex + 1} / ${stimuliData.length}`;
+        
+        recBtn.innerText = `Start Recording (Take 1 / ${totalTakes})`;
+        recBtn.disabled = false;
+        recBtn.classList.remove('active');
+        nextBtn.disabled = true;
+        redoTakeBtn.disabled = true;
+        hintMsg.style.display = "none";
     }
 
     recBtn.onclick = async () => {
@@ -385,123 +310,111 @@
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
-        if (recBtn.textContent.startsWith("Start Recording")) {
+        if (recBtn.innerText.startsWith("Start Recording")) {
             audioData = [];
-            input = audioContext.createMediaStreamSource(stream);
+            const source = audioContext.createMediaStreamSource(stream);
             processor = audioContext.createScriptProcessor(4096, 1, 1);
-            processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
-            input.connect(processor);
+            processor.onaudioprocess = e => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+            source.connect(processor);
             processor.connect(audioContext.destination);
-            recBtn.textContent = `Stop Recording (Take ${currentSentenceTakes.length + 1})`;
+
+            recBtn.innerText = `Stop Recording (Take ${currentTake} / ${totalTakes})`;
             recBtn.classList.add('active');
             nextBtn.disabled = true;
-            redoBtn.disabled = true;
+            redoTakeBtn.disabled = true;
             hintMsg.style.display = "none";
         } else {
             processor.disconnect();
-            input.disconnect();
-            
-            currentSentenceTakes.push(exportWAV(audioData));
+            currentItemTakes.push([...audioData]);
             recBtn.classList.remove('active');
 
-            if (currentSentenceTakes.length < REQUIRED_TAKES) {
+            if (currentTake < totalTakes) {
+                currentTake++;
+                recBtn.innerText = `Start Recording (Take ${currentTake} / ${totalTakes})`;
                 recBtn.disabled = false;
                 nextBtn.disabled = true;
-                updateProgressDisplay();
-                hintMsg.style.display = "block";
-                hintMsg.textContent = `⚠ Take ${currentSentenceTakes.length} saved. Click button above to record Take ${currentSentenceTakes.length + 1}.`;
-            } else {
-                recBtn.disabled = true;
-                nextBtn.disabled = false;
-                redoBtn.disabled = false;
-                recBtn.textContent = `${REQUIRED_TAKES} Takes Recorded ✓`;
-                hintMsg.style.display = "block";
-                hintMsg.textContent = `⚠ ${REQUIRED_TAKES} takes complete! Click 'Save & Next' to continue.`;
-            }
-        }
-    };
-
-    redoBtn.onclick = () => {
-        if (currentSentenceTakes.length > 0) {
-            currentSentenceTakes.pop();
-            recBtn.disabled = false;
-            nextBtn.disabled = true;
-            updateProgressDisplay();
-
-            if (currentSentenceTakes.length === 0) {
+                redoTakeBtn.disabled = false;
                 hintMsg.style.display = "none";
             } else {
+                recBtn.innerText = `All Takes Done (${totalTakes} / ${totalTakes})`;
+                recBtn.disabled = true;
+                nextBtn.disabled = false;
+                redoTakeBtn.disabled = false;
                 hintMsg.style.display = "block";
-                hintMsg.textContent = `⚠ Last take discarded. Ready to record Take ${currentSentenceTakes.length + 1}.`;
             }
         }
     };
 
-    nextBtn.onclick = async () => {
-        const sanitize = (text) => text.replace(/[\r\n]+/g, ' ').trim();
-        const target = sanitize(targetInput.value);
+    redoTakeBtn.onclick = () => {
+        if (processor) {
+            try { processor.disconnect(); } catch (e) {}
+        }
         
-        if (!target) return alert("Please type the sentence text.");
-        if (currentSentenceTakes.length < REQUIRED_TAKES) return alert(`Please record ${REQUIRED_TAKES} takes before continuing.`);
+        if (currentItemTakes.length > 0) {
+            currentItemTakes.pop();
+        }
 
-        const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
-        const combinedGloss = glossCells.map(cell => cell.value.trim() || '*').join(' ');
+        currentTake = currentItemTakes.length + 1;
+        audioData = [];
 
-        sessionData.push({
-            target: target,
-            gloss: combinedGloss,
-            trans: sanitize(document.getElementById('transInput').value),
-            takes: [...currentSentenceTakes]
+        recBtn.innerText = `Start Recording (Take ${currentTake} / ${totalTakes})`;
+        recBtn.classList.remove('active');
+        recBtn.disabled = false;
+        nextBtn.disabled = true;
+        redoTakeBtn.disabled = (currentItemTakes.length === 0);
+        hintMsg.style.display = "none";
+    };
+
+    nextBtn.onclick = () => {
+        currentItemTakes.forEach((takeData, idx) => {
+            results.push({ 
+                itemNum: currentIndex + 1,
+                takeNum: idx + 1,
+                s: stimuliData[currentIndex].s, 
+                t: stimuliData[currentIndex].t || stimuliData[currentIndex].en || "", 
+                wav: exportWAV(takeData) 
+            });
         });
 
-        currentSentenceTakes = [];
-        savedGlosses = [];
-        updateProgressDisplay();
+        currentIndex++;
         
-        targetInput.value = "";
-        glossContainer.innerHTML = '<span style="color:#aaa; font-size:0.85rem; padding:10px;">Type words above to generate aligned gloss boxes...</span>';
-        document.getElementById('transInput').value = "";
-        
-        recBtn.disabled = false;
-        redoBtn.disabled = true;
-        nextBtn.disabled = true;
-        hintMsg.style.display = "none";
-
-        if (sessionData.length >= TOTAL_SENTENCES) {
+        if (currentIndex < stimuliData.length) {
+            showTrial();
+        } else {
             handleFinalExport();
         }
     };
-    
+
     async function handleFinalExport() {
         recordingUI.style.display = "none";
         document.getElementById('mainTitle').style.display = "none";
         doneUI.style.display = "block";
 
-        const dateStr = getFormattedDate();
         const zip = new JSZip();
-        let tsv = "Language\tSpeaker\tFile\tTake\tTarget\tGloss\tTranslation\n";
+        const dateStr = getFormattedDate(); 
         
-        sessionData.forEach((item, i) => {
-            const index = String(i + 1).padStart(3, '0');
+        let tsv = "Language\tSpeaker\tDate\tItem\tTake\tFile\tStimuli\tTranslation\n";
+        
+        results.forEach((r) => {
+            const indexStr = String(r.itemNum).padStart(3, '0');
+            const fileName = `${currentLang}_${currentSpeaker}_${dateStr}_item${indexStr}_take${r.takeNum}.wav`;
             
-            item.takes.forEach((takeBlob, takeIdx) => {
-                const takeNum = takeIdx + 1;
-                const fileName = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take${takeNum}`;
-                zip.file(`${fileName}.wav`, takeBlob);
-                tsv += `${currentLang}\t${currentSpeaker}\t${fileName}.wav\t${takeNum}\t${item.target}\t${item.gloss}\t${item.trans}\n`;
-            });
+            zip.file(fileName, r.wav);
+            tsv += `${currentLang}\t${currentSpeaker}\t${dateStr}\t${r.itemNum}\t${r.takeNum}\t${fileName}\t${r.s}\t${r.t}\n`;
         });
-
+        
         zip.file(`Metadata_${currentLang}_${currentSpeaker}_${dateStr}.tsv`, tsv);
-        const content = await zip.generateAsync({type:"blob"});
+        const blob = await zip.generateAsync({type:"blob"});
         
         const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data.zip`;
-        generatedZipFile = new File([content], zipFileName, { type: 'application/zip' });
+        generatedZipFile = new File([blob], zipFileName, { type: 'application/zip' });
 
         const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
+        link.href = URL.createObjectURL(blob);
         link.download = zipFileName;
         link.click();
+        
+        window.open(ONEDRIVE_LINK, '_blank');
 
         shareFileBtn.onclick = async () => {
             if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
@@ -516,7 +429,7 @@
                 }
             } else {
                 const mobLink = document.createElement('a');
-                mobLink.href = URL.createObjectURL(content);
+                mobLink.href = URL.createObjectURL(blob);
                 mobLink.download = zipFileName;
                 mobLink.click();
             }
@@ -532,38 +445,25 @@
     };
 
     function exportWAV(bufferList) {
-        const buffer = flatten(bufferList);
-        const wav = new ArrayBuffer(44 + buffer.length * 2);
+        let len = bufferList.reduce((a, b) => a + b.length, 0);
+        let result = new Float32Array(len);
+        let offset = 0;
+        for (let b of bufferList) { result.set(b, offset); offset += b.length; }
+        const wav = new ArrayBuffer(44 + result.length * 2);
         const view = new DataView(wav);
-        writeString(view, 0, 'RIFF');
-        view.setUint32(4, 32 + buffer.length * 2, true);
-        writeString(view, 8, 'WAVE');
-        writeString(view, 12, 'fmt ');
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, sampleRate, true);
-        view.setUint32(28, sampleRate * 2, true);
-        view.setUint16(32, 2, true);
-        view.setUint16(34, 16, true);
-        writeString(view, 36, 'data');
-        view.setUint32(40, buffer.length * 2, true);
-        let offset = 44;
-        for (let i = 0; i < buffer.length; i++, offset += 2) {
-            let s = Math.max(-1, Math.min(1, buffer[i]));
-            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        const s = (o, v) => { for (let i = 0; i < v.length; i++) view.setUint8(o + i, v.charCodeAt(i)); };
+        s(0, 'RIFF'); view.setUint32(4, 32 + result.length * 2, true);
+        s(8, 'WAVE'); s(12, 'fmt '); view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+        s(36, 'data'); view.setUint32(40, result.length * 2, true);
+        offset = 44;
+        for (let i = 0; i < result.length; i++, offset += 2) {
+            let val = Math.max(-1, Math.min(1, result[i]));
+            view.setInt16(offset, val < 0 ? val * 0x8000 : val * 0x7FFF, true);
         }
         return new Blob([view], { type: 'audio/wav' });
-    }
-    function flatten(list) {
-        let len = list.reduce((a, b) => a + b.length, 0);
-        let res = new Float32Array(len);
-        let off = 0;
-        for (let b of list) { res.set(b, off); off += b.length; }
-        return res;
-    }
-    function writeString(v, o, s) {
-        for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
     }
 </script>
 </body>

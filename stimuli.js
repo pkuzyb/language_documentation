@@ -1,13 +1,81 @@
-// 注意：变量名必须叫 stimuliData，不要修改
 const stimuliData = [
-    { s: "སྲུང་ངོས་འདི་ཨ་མི་རི་ཀ་ནི་སློབ་དཔོན་གྲགས་ཅན་གྱིས་བྲིས་བཞུགས།", t: "This novel is written by famous american writer" },
-    { s: "གཙང་ཆུ་འདི་གྲུ་ཆུང་འདི་བཟུམ་གྱི་དོན་ལུ་གཏིང་ལངས་མ་སྟེ་མིན་འདུག", t: "This river isn't deep enough for this kind of boat." },
-    { s: "སློབ་དུས་འདི་ནང་གི་སློབ་ཕྲུག་གཉིས་དཔེ་ཆ་ལས་བརྟེན་མཐར་མ་འགྱོལ།", t: "This semester I failed two students for plagiarism." },
-    { s: "ཞབས་ཁྲོ་འདི་གིས་ང་གི་འབྲིང་རིམ་སློབ་གྲྭ་བར་མའི་དུས་ཚོད་དྲན་གསོ་འབདཝ་མས།", t: "This song reminds me of my junior high school days." },
-    { s: "ཤིང་འདི་ནགས་ཚལ་འདི་ནང་རིང་ཤོས་དང་རྒས་ཤོས་ཅིག་ཨིན་པས།", t: "This tree is the tallest and oldest in this forest." },
-    { s: "མི་སྟོང་ཕྲག་ལས་བཅས་ནད་གཞི་འདི་གི་གནོད་པ་ཕོག་ཡི།", t: "Thousands of people became victims of this disease." },
-    { s: "ཕྱི་རྒྱལ་གྱི་སྐད་སློབ་ནི་གི་དོན་ལས་དུས་ཚོད་རེ་བ་དགོཔ་ལས།", t: "To learn a foreign language requires a lot of time." },
-    { s: "བདེན་པ་བཤད་ནི་གི་དོན་ལུ་ ང་གི་ཁོ་གི་སློབ་སྟངས་འདི་མི་དགའ་བས།", t: "To tell the truth, I don't like his way of talking." },
-    { s: "ང་གི་ཤེས་པ་དང་འཁྲིལ་བ་ཅིན་ འཛོར་གཏམ་འདི་མི་བདེན།", t: "To the best of my knowledge, the rumor is not true." },
-    { s: "ཏཕས་གཙུག་ལག་སློབ་འདི་ བོས་ཊོན་ལུ་སློབ་གྲྭ་སྐད་གྲགས་ཅན་ཅིག་ཨིན།", t: "Tufts University is a very famous school in Boston." }
+    // Pair 1
+    { s: "བསྟན་འཛིན་གློག་བརྙན་བལྟ་བར་ཡར་སོང་ཡི།", en: "Tenzin left to watch movie." },
+    { s: "བསྟན་འཛིན་གློག་བརྙན་བལྟ་བར་ཡར་སོང་ཡི?", en: "Did Tenzin leave to watch a movie?" },
+    
+    // Pair 2
+    { s: "བཟང་མོ་ཕགཔ་འཆོལ་བར་འགྱོ་ནུག།", en: "Zangmo left to search a pig." },
+    { s: "བཟང་མོ་ཕགཔ་འཆོལ་བར་འགྱོ་ནུག?", en: "Did Zangmo leave to search for a pig?" },
+    
+    // Pair 3
+    { s: "ཨ་མ་ཁྲོམ་ཁར་ཡོད།", en: "Mother is in the town." },
+    { s: "ཨ་མ་ཁྲོམ་ཁར་ཡོད?", en: "Is mother in the town?" },
+    
+    // Pair 4
+    { s: "ཨ་པ་ལཱ་འབད་དོ།", en: "Father is working." },
+    { s: "ཨ་པ་ལཱ་འབད་དོ?", en: "Is father working?" },
+    
+    // Pair 5
+    { s: "ཁོ་དཔེ་ཆ་ལྷབ་དེ།", en: "He is reading a book." },
+    { s: "ཁོ་དཔེ་ཆ་ལྷབ་དེ?", en: "Is he reading a book?" },
+    
+    // Pair 6
+    { s: "རླུང་ཤུགས་སྦེ་ཕུར་དེ།", en: "The wind is blowing strongly." },
+    { s: "རླུང་ཤུགས་སྦེ་ཕུར་དེ?", en: "Is the wind blowing strongly?" },
+    
+    // Pair 7
+    { s: "ཨ་ནི་སེམས་མ་དགའ་བས།", en: "Aunt is said to be unhappy." },
+    { s: "ཨ་ནི་སེམས་མ་དགའ་བས?", en: "Is aunt said to be unhappy?" },
+    
+    // Pair 8
+    { s: "ཨ་ཞང་འདི་སྐྱ་དཀར་འཐོན་ནུག།", en: "Maternal uncle's hair has turned white." },
+    { s: "ཨ་ཞང་འདི་སྐྱ་དཀར་འཐོན་ནུག?", en: "Has maternal uncle's hair turned white?" },
+    
+    // Pair 9
+    { s: "ཨའི་གིས་ལྟོ་བཟོ།", en: "Mother is preparing food." },
+    { s: "ཨའི་གིས་ལྟོ་བཟོ?", en: "Is mother preparing food?" },
+    
+    // Pair 10
+    { s: "ཁྱིམ་འདི་གསརཔ་འདུག།", en: "This house is new." },
+    { s: "ཁྱིམ་འདི་གསརཔ་འདུག?", en: "Is this house new?" },
+
+    // Pair 11
+    { s: "ཆརཔ་རྐྱབ་འཚར་ནུག།", en: "It has stopped raining." },
+    { s: "ཆརཔ་རྐྱབ་འཚར་ནུག?", en: "Has it stopped raining?" },
+    
+    // Pair 12
+    { s: "ཁོ་མི་འོང་ལོ།", en: "He will not come, it is said." },
+    { s: "ཁོ་མི་འོང་ལོ?", en: "Will he not come, it is said?" },
+    
+    // Pair 13
+    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག།", en: "The plane landed at the airport." },
+    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག?", en: "Did the plane land at the airport?" },
+    
+    // Pair 14
+    { s: "ཁོ་གཟུགས་རིམ་ཡོད།", en: "He has a good physique." },
+    { s: "ཁོ་གཟུགས་རིམ་ཡོད?", en: "Does he have a good physique?" },
+    
+    // Pair 15
+    { s: "ང་ལྟོ་བཟའ་ནི།", en: "I am going to eat." },
+    { s: "ང་ལྟོ་བཟའ་ནི?", en: "Are you/am I going to eat?" },
+    
+    // Pair 16
+    { s: "མོ་གནམ་མེད་ས་མེད་འཛའ་རིམ་འདུག།", en: "She is extremely beautiful." },
+    { s: "མོ་གནམ་མེད་ས་མེད་འཛའ་རིམ་འདུག?", en: "Is she extremely beautiful?" },
+    
+    // Pair 17
+    { s: "ཁྱོད་འབྲུག་མི་ཨིན།", en: "You are Bhutanese." },
+    { s: "ཁྱོད་འབྲུག་མི་ཨིན?", en: "Are you Bhutanese?" },
+    
+    // Pair 18
+    { s: "ཕར་ལུ་མི་འདུག།", en: "There is no one over there." },
+    { s: "ཕར་ལུ་མི་འདུག?", en: "Is there no one over there?" },
+    
+    // Pair 19
+    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག།", en: "The dried beef smells tasty." },
+    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག?", en: "Does the dried beef smell tasty?" },
+    
+    // Pair 20
+    { s: "བོད་སྲེམ་མི་ཞིམ་མས།", en: "The dish is not delicious." },
+    { s: "བོད་སྲེམ་མི་ཞིམ་མས?", en: "Is the dish not delicious?" }
 ];
