@@ -455,7 +455,12 @@
         if (currentSentenceTakes.length < REQUIRED_TAKES) return alert(`Please record ${REQUIRED_TAKES} takes before continuing.`);
 
         const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
-        const combinedGloss = glossCells.map(cell => cell.value.trim() || '*').join(' ');
+        
+        // Joined by '_' across gloss boxes. Internal underscores in a single box are converted to '-' to preserve strict '_' delimitations.
+        const combinedGloss = glossCells.map(cell => {
+            let val = cell.value.trim().replace(/\s+/g, ' ').replace(/_/g, '-');
+            return val || '*';
+        }).join('_');
 
         sessionData.push({
             target: target,
