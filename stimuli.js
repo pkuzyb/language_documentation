@@ -159,5 +159,46 @@ const stimuliData = [
 
     // Pair 40
     { s: "ད་རེས་སློབ་གྲྭ་ངལ་གསོ་ཨིན།", en: "Today is school holiday." },
-    { s: "ད་རེས་སློབ་གྲྭ་ངལ་གསོ་ཨིན?", en: "Is today a school holiday?" }
+    { s: "ད་རེས་སློབ་གྲྭ་ངལ་གསོ་ཨིན?", en: "Is today a school holiday?" },
+
+    // --- Added Items 001–010 (10 Pairs / 20 Sentences) ---
+    // Pair 41 (item001)
+    { s: "འགྱོ་པ་རང་འཐོན་འོང།", en: "Will be coming soon." },
+    { s: "འགྱོ་པ་རང་འཐོན་འོང?", en: "Will he/she be coming soon?" },
+
+    // Pair 42 (item002)
+    { s: "ལག་བཏགས་ཅིག་བསྐྱལ་གནང།", en: "Please send a parcel." },
+    { s: "ལག་བཏགས་ཅིག་བསྐྱལ་གནང?", en: "Would you please send a parcel?" },
+
+    // Pair 43 (item003)
+    { s: "རྒྱ་གར་ལུ་མི་འགྱོ།", en: "Not going to India." },
+    { s: "རྒྱ་གར་ལུ་མི་འགྱོ?", en: "Is he/she not going to India?" },
+
+    // Pair 44 (item004)
+    { s: "ཁོ་རྒྱ་མི་ཁ་ཤེས་ལོ།", en: "He said he knows Chinese language." },
+    { s: "ཁོ་རྒྱ་མི་ཁ་ཤེས་ལོ?", en: "Did he say he knows Chinese language?" },
+
+    // Pair 45 (item005)
+    { s: "བལ་ཡུལ་ལུ་གནས་འདུག།", en: "There is a holy site in Nepal." },
+    { s: "བལ་ཡུལ་ལུ་གནས་འདུག?", en: "Is there a holy site in Nepal?" },
+
+    // Pair 46 (item006)
+    { s: "བོད་ལུ་ཁམ་པ་མི་རིགས་ཡོད།", en: "There are Khampa people in Tibet." },
+    { s: "བོད་ལུ་ཁམ་པ་མི་རིགས་ཡོད?", en: "Are there Khampa people in Tibet?" },
+
+    // Pair 47 (item007)
+    { s: "ལྷ་ས་ལུ་པོ་ཊ་ལ་མཇལ་འོང།", en: "At Lhasa we got to see Potala Palace." },
+    { s: "ལྷ་ས་ལུ་པོ་ཊ་ལ་མཇལ་འོང?", en: "At Lhasa did we get to see Potala Palace?" },
+
+    // Pair 48 (item008)
+    { s: "ཕྲནས་ལུ་ཨ་ཞིམ་ཡོད།", en: "Sister is there in France." },
+    { s: "ཕྲནས་ལུ་ཨ་ཞིམ་ཡོད?", en: "Is sister there in France?" },
+
+    // Pair 49 (item009)
+    { s: "ར་ཤི་ཡ་དང་ཡུ་ཀྲེན་དམག་རྐྱབ་དེ།", en: "Russia and Ukraine are fighting a war." },
+    { s: "ར་ཤི་ཡ་དང་ཡུ་ཀྲེན་དམག་རྐྱབ་དེ?", en: "Are Russia and Ukraine fighting a war?" },
+
+    // Pair 50 (item010)
+    { s: "རོ་ཁྱི་དམརཔོ་ཧབ་དེ།", en: "The red dog is barking." },
+    { s: "རོ་ཁྱི་དམརཔོ་ཧབ་དེ?", en: "Is the red dog barking?" }
 ];
