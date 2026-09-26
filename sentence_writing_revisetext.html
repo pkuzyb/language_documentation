@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sentence_Write_Recording</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Load external stimuli file -->
+    <script src="stimuli_revisetext.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 850px; margin: 0 auto; background: #f0f2f5; color: #333; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #1a73e8; margin-bottom: 20px; font-size: 1.5rem; }
+        
+        .field-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 0.9em; }
+        
+        input[type="text"], textarea, select { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; 
+            border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: white;
+        }
+        .speaker-box { background-color: #e8f0fe; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #1a73e8; }
+        
+        #micCheckInterface { display: none; background: #f8f9fa; border: 2px solid #e0e0e0; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .meter-container { background: #eee; width: 100%; height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; position: relative; }
+        #volumeBar { background: #34a853; width: 0%; height: 100%; transition: width 0.1s ease; }
+        #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
+        
+        #recordingInterface { display: none; margin-top: 20px; }
+        .target-lang { height: 70px; font-size: 1.1rem; border-left: 5px solid #1a73e8; resize: vertical; }
+        .trans-lang { height: 60px; font-style: italic; }
+
+        .gloss-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px;
+            background: #fafafa;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            min-height: 75px;
+            align-items: flex-start;
+        }
+        .gloss-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #1a73e8;
+            border-radius: 6px;
+            padding: 6px 8px;
+            min-width: 70px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .gloss-card .word-tag {
+            font-weight: bold;
+            color: #1a73e8;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            word-break: break-all;
+            text-align: center;
+        }
+        .gloss-card input {
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
+        button { padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 250px; }
+
+        #startSessionBtn { background: #1a73e8; color: white; }
+        #confirmMicBtn { background: #34a853; color: white; margin-top: 15px; }
+        #confirmMicBtn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        #recBtn { background: #ea4335; color: white; }
+        #recBtn.active { background: #c5221f; animation: pulse 1.5s infinite; }
+        #recBtn:disabled { background: #ccc !important; color: #888; cursor: not-allowed; border: 1px solid #bbb; }
+
+        #redoBtn { background: #fbbc04; color: #202124; }
+        #redoBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
+        #nextBtn { background: #1a73e8; color: white; }
+        #nextBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
+        #doneScreen { display: none; padding: 20px 10px; }
+        .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
+        .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; font-size: 0.9rem;}
+
+        #desktopDoneView { display: block; }
+        #mobileDoneView { display: none; }
+
+        .final-btn-stack { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-top: 20px; }
+        .final-btn-stack button { max-width: 100%; width: 100%; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px 15px; }
+            .btn-group { flex-direction: column; align-items: center; gap: 10px; }
+            button { max-width: 100%; }
+
+            #desktopDoneView { display: none; }
+            #mobileDoneView { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="mainTitle">Sentence_Write_Recording</h1>
+    
+    <!-- Step 1: Speaker Info -->
+    <div id="setupInterface" class="speaker-box">
+        <div class="field-group">
+            <label>Language</label>
+            <input type="text" id="speakerLang" placeholder="Enter Language...">
+        </div>
+        <div class="field-group">
+            <label>Speaker Name</label>
+            <input type="text" id="speakerName" placeholder="Enter Name...">
+        </div>
+        <div class="field-group">
+            <label>Are you wearing headphones?</label>
+            <select id="headphoneCheck">
+                <option value="">-- Select --</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label>Is your acoustic environment quiet and good for recording?</label>
+            <select id="envCheck">
+                <option value="">-- Select --</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </div>
+        <button id="startSessionBtn">Start Session</button>
+    </div>
+
+    <!-- Step 2: Loudness/Mic Check Screen -->
+    <div id="micCheckInterface">
+        <h3>🎙 Audio Check</h3>
+        <p style="font-size: 0.85em; color: #666;">Please speak into the mic to test your volume level.</p>
+        <div class="meter-container">
+            <div id="volumeBar"></div>
+        </div>
+        <div id="volumeStatus">Waiting for audio...</div>
+        <button id="confirmMicBtn" disabled>Proceed</button>
+    </div>
+
+    <!-- Step 3: Recording Interface -->
+    <div id="recordingInterface">
+        <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / <span id="totalDisplay">0</span></div>
+
+        <div class="field-group">
+            <label>Sentence (Edit reference text below as needed)</label>
+            <textarea id="targetInput" class="target-lang" placeholder="Reference text will load here for editing..."></textarea>
+        </div>
+        <div class="field-group">
+            <label>Gloss (Auto-aligned)</label>
+            <div id="glossContainer" class="gloss-container">
+                <span style="color:#aaa; font-size:0.85rem; padding: 10px;">Type words above to generate aligned gloss boxes...</span>
+            </div>
+        </div>
+        <div class="field-group">
+            <label>Translation</label>
+            <textarea id="transInput" class="trans-lang" placeholder="Type translation here..."></textarea>
+        </div>
+        <div class="field-group">
+            <label>Note 1</label>
+            <textarea id="note1Input" class="trans-lang" placeholder="Type optional notes 1 here..."></textarea>
+        </div>
+        <div class="field-group">
+            <label>Note 2</label>
+            <textarea id="note2Input" class="trans-lang" placeholder="Type optional notes 2 here..."></textarea>
+        </div>
+
+        <div class="btn-group">
+            <button id="recBtn">Start Recording (Take 1 of 2)</button>
+            <button id="nextBtn" disabled>Save & Next</button>
+            <button id="redoBtn" disabled>Redo Last Take</button>
+        </div>
+        <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
+            ⚠ Record 2 takes before clicking "Save & Next".
+        </p>
+    </div>
+
+    <!-- Step 4: Final Screen -->
+    <div id="doneScreen">
+        <div class="done-text">ALL DONE! / 完成！</div>
+        
+        <div id="desktopDoneView">
+            <div class="upload-box">
+                <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
+            </div>
+            <button id="desktopManualUploadBtn" style="background: #1a73e8; color: white;">Open OneDrive Upload</button>
+            <br>
+            <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
+        </div>
+
+        <div id="mobileDoneView">
+            <div class="upload-box">
+                <strong>Submission Options:</strong><br>
+                1. Upload directly from your phone to OneDrive folder.<br>
+                2. Or Share via App/Email (writes to: <b>zhang3435@wisc.edu</b>)
+            </div>
+
+            <div class="final-btn-stack">
+                <button id="mobileOneDriveBtn" style="background: #1a73e8; color: white;">Upload directly to OneDrive</button>
+                <button id="shareFileBtn" style="background: #34a853; color: white;">Send via App (WeChat, Messenger, Email)</button>
+                <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 10px;">New Session</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const REQUIRED_TAKES = 2;
+    const ONEDRIVE_LINK = "https://uwprod-my.sharepoint.com/:f:/g/personal/zhang3435_wisc_edu/IgBOEIaS-v5-RJE9fd94d7HnAfD-UVkPZouEGwHima0Rwt0";
+
+    let REFERENCE_SENTENCES = [];
+    let TOTAL_SENTENCES = 0;
+
+    function getReferenceSentences() {
+        // Robust variable detection for stimuliData or string arrays
+        if (typeof stimuliData !== 'undefined' && Array.isArray(stimuliData)) return stimuliData;
+        if (typeof stimuli_revisetext !== 'undefined' && Array.isArray(stimuli_revisetext)) return stimuli_revisetext;
+        if (typeof REFERENCE_SENTENCES !== 'undefined' && Array.isArray(REFERENCE_SENTENCES) && REFERENCE_SENTENCES.length > 0) return REFERENCE_SENTENCES;
+        if (typeof sentences !== 'undefined' && Array.isArray(sentences)) return sentences;
+        return [];
+    }
+
+    let audioContext, stream, processor, input, audioData = [], sessionData = [];
+    let currentSpeaker = "";
+    let currentLang = "";
+    let checkAnimationId;
+    const sampleRate = 44100;
+    let generatedZipFile = null;
+
+    let currentSentenceTakes = [];
+    let savedGlosses = [];
+
+    const setupUI = document.getElementById('setupInterface');
+    const micCheckUI = document.getElementById('micCheckInterface');
+    const recordingUI = document.getElementById('recordingInterface');
+    const doneUI = document.getElementById('doneScreen');
+    const recBtn = document.getElementById('recBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const hintMsg = document.getElementById('hintMsg');
+    const volumeBar = document.getElementById('volumeBar');
+    const volumeStatus = document.getElementById('volumeStatus');
+    const confirmMicBtn = document.getElementById('confirmMicBtn');
+    const shareFileBtn = document.getElementById('shareFileBtn');
+
+    const targetInput = document.getElementById('targetInput');
+    const transInput = document.getElementById('transInput');
+    const glossContainer = document.getElementById('glossContainer');
+
+    targetInput.addEventListener('input', updateGlossGrid);
+
+    function loadCurrentSentence() {
+        const index = sessionData.length;
+        if (index < REFERENCE_SENTENCES.length) {
+            const rawItem = REFERENCE_SENTENCES[index];
+            let sentenceText = "";
+            let translationText = "";
+
+            // Handle object { s: "...", en: "..." } structure
+            if (typeof rawItem === 'object' && rawItem !== null) {
+                sentenceText = rawItem.s || rawItem.text || rawItem.sentence || "";
+                translationText = rawItem.en || rawItem.trans || rawItem.translation || "";
+            } else if (typeof rawItem === 'string') {
+                sentenceText = rawItem;
+            }
+
+            targetInput.value = sentenceText;
+            transInput.value = translationText;
+            updateGlossGrid();
+        }
+    }
+
+    function updateGlossGrid() {
+        const currentInputs = glossContainer.querySelectorAll('.gloss-input-cell');
+        currentInputs.forEach((inp, idx) => {
+            savedGlosses[idx] = inp.value;
+        });
+
+        const text = targetInput.value.replace(/[\r\n]+/g, ' ').trim();
+        const words = text ? text.split(/\s+/) : [];
+
+        glossContainer.innerHTML = '';
+
+        if (words.length === 0) {
+            glossContainer.innerHTML = '<span style="color:#aaa; font-size:0.85rem; padding:10px;">Type words above to generate aligned gloss boxes...</span>';
+            return;
+        }
+
+        words.forEach((word, index) => {
+            const card = document.createElement('div');
+            card.className = 'gloss-card';
+
+            const wordLabel = document.createElement('div');
+            wordLabel.className = 'word-tag';
+            wordLabel.textContent = word;
+
+            const glossInput = document.createElement('input');
+            glossInput.type = 'text';
+            glossInput.className = 'gloss-input-cell';
+            glossInput.placeholder = 'gloss';
+            glossInput.value = savedGlosses[index] || '';
+            glossInput.oninput = (e) => {
+                savedGlosses[index] = e.target.value;
+            };
+
+            card.appendChild(wordLabel);
+            card.appendChild(glossInput);
+            glossContainer.appendChild(card);
+        });
+    }
+
+    function getFormattedDate() {
+        const d = new Date();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}_${hours}-${minutes}`;
+    }
+
+    document.getElementById('startSessionBtn').onclick = async () => {
+        const lang = document.getElementById('speakerLang').value.trim();
+        const name = document.getElementById('speakerName').value.trim();
+        const hasHeadphones = document.getElementById('headphoneCheck').value;
+        const hasGoodEnv = document.getElementById('envCheck').value;
+
+        // Fetch stimuli array
+        REFERENCE_SENTENCES = getReferenceSentences();
+        TOTAL_SENTENCES = REFERENCE_SENTENCES.length;
+        document.getElementById('totalDisplay').textContent = TOTAL_SENTENCES;
+
+        if (TOTAL_SENTENCES === 0) {
+            alert("Error: No sentences found in 'stimuli_revisetext.js'. Please make sure the file is in the same folder as this HTML file.");
+            return;
+        }
+
+        if (!lang) return alert("Please enter the language.");
+        if (!name) return alert("Please enter your name.");
+        if (hasHeadphones !== "yes") return alert("You must wear headphones to proceed. Please plug them in and select 'Yes'.");
+        if (hasGoodEnv !== "yes") return alert("A quiet acoustic environment is required to proceed. Please find a quiet space and select 'Yes'.");
+
+        currentLang = lang.replace(/\s+/g, '_');
+        currentSpeaker = name.replace(/\s+/g, '_');
+        document.getElementById('displayName').textContent = `${currentSpeaker} (${currentLang})`;
+        
+        setupUI.style.display = "none";
+        micCheckUI.style.display = "block";
+        await runLoudnessCheck();
+    };
+
+    async function runLoudnessCheck() {
+        try {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+            }
+            if (!stream) {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+
+            const checkInput = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            checkInput.connect(analyser);
+
+            function updateMeter() {
+                analyser.getByteFrequencyData(dataArray);
+                let total = 0;
+                for (let i = 0; i < bufferLength; i++) total += dataArray[i];
+                let average = total / bufferLength;
+                
+                let volumePercentage = Math.min(100, Math.floor((average / 128) * 100));
+                volumeBar.style.width = volumePercentage + "%";
+
+                if (volumePercentage < 10) {
+                    volumeStatus.innerHTML = "<span style='color: #ea4335;'>Too Quiet 🔈 (Please speak louder to unlock button)</span>";
+                    volumeBar.style.background = "#ea4335";
+                    confirmMicBtn.disabled = true;
+                } else if (volumePercentage > 85) {
+                    volumeStatus.innerHTML = "<span style='color: #fcc419;'>Too Loud 🔊 (Clipping danger! Move mic away)</span>";
+                    volumeBar.style.background = "#fcc419";
+                    confirmMicBtn.disabled = true;
+                } else {
+                    volumeStatus.innerHTML = "<span style='color: #34a853;'>Perfect Volume 👌 (Button Unlocked!)</span>";
+                    volumeBar.style.background = "#34a853";
+                    confirmMicBtn.disabled = false;
+                }
+                checkAnimationId = requestAnimationFrame(updateMeter);
+            }
+            updateMeter();
+            
+        } catch (err) {
+            alert("Microphone access denied. Please allow microphone access in your browser settings.");
+            console.error(err);
+        }
+    }
+
+    confirmMicBtn.onclick = () => {
+        cancelAnimationFrame(checkAnimationId);
+        micCheckUI.style.display = "none";
+        recordingUI.style.display = "block";
+        updateProgressDisplay();
+        loadCurrentSentence();
+    };
+
+    function updateProgressDisplay() {
+        document.getElementById('count').textContent = sessionData.length;
+        const takeNum = currentSentenceTakes.length + 1;
+        
+        if (currentSentenceTakes.length < REQUIRED_TAKES) {
+            recBtn.textContent = `Start Recording (Take ${takeNum} of ${REQUIRED_TAKES})`;
+        }
+
+        redoBtn.disabled = (currentSentenceTakes.length === 0);
+    }
+
+    recBtn.onclick = async () => {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+
+        if (recBtn.textContent.startsWith("Start Recording")) {
+            audioData = [];
+            input = audioContext.createMediaStreamSource(stream);
+            processor = audioContext.createScriptProcessor(4096, 1, 1);
+            processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+            input.connect(processor);
+            processor.connect(audioContext.destination);
+            recBtn.textContent = `Stop Recording (Take ${currentSentenceTakes.length + 1})`;
+            recBtn.classList.add('active');
+            nextBtn.disabled = true;
+            redoBtn.disabled = true;
+            hintMsg.style.display = "none";
+        } else {
+            processor.disconnect();
+            input.disconnect();
+            
+            currentSentenceTakes.push(exportWAV(audioData));
+            recBtn.classList.remove('active');
+
+            if (currentSentenceTakes.length < REQUIRED_TAKES) {
+                recBtn.disabled = false;
+                nextBtn.disabled = true;
+                updateProgressDisplay();
+                hintMsg.style.display = "block";
+                hintMsg.textContent = `⚠ Take ${currentSentenceTakes.length} saved. Click button above to record Take ${currentSentenceTakes.length + 1}.`;
+            } else {
+                recBtn.disabled = true;
+                nextBtn.disabled = false;
+                redoBtn.disabled = false;
+                recBtn.textContent = `${REQUIRED_TAKES} Takes Recorded ✓`;
+                hintMsg.style.display = "block";
+                hintMsg.textContent = `⚠ ${REQUIRED_TAKES} takes complete! Click 'Save & Next' to continue.`;
+            }
+        }
+    };
+
+    redoBtn.onclick = () => {
+        if (currentSentenceTakes.length > 0) {
+            currentSentenceTakes.pop();
+            recBtn.disabled = false;
+            nextBtn.disabled = true;
+            updateProgressDisplay();
+
+            if (currentSentenceTakes.length === 0) {
+                hintMsg.style.display = "none";
+            } else {
+                hintMsg.style.display = "block";
+                hintMsg.textContent = `⚠ Last take discarded. Ready to record Take ${currentSentenceTakes.length + 1}.`;
+            }
+        }
+    };
+
+    nextBtn.onclick = async () => {
+        const sanitize = (text) => text.replace(/[\r\n]+/g, ' ').trim();
+        const revisedText = sanitize(targetInput.value);
+        
+        if (!revisedText) return alert("Please enter or verify the sentence text.");
+        if (currentSentenceTakes.length < REQUIRED_TAKES) return alert(`Please record ${REQUIRED_TAKES} takes before continuing.`);
+
+        const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
+        
+        const combinedGloss = glossCells.map(cell => {
+            let val = cell.value.trim().replace(/\s+/g, ' ').replace(/_/g, '-');
+            return val || '*';
+        }).join('_');
+
+        sessionData.push({
+            revisedText: revisedText,
+            gloss: combinedGloss,
+            trans: sanitize(transInput.value),
+            note1: sanitize(document.getElementById('note1Input').value),
+            note2: sanitize(document.getElementById('note2Input').value),
+            takes: [...currentSentenceTakes]
+        });
+
+        currentSentenceTakes = [];
+        savedGlosses = [];
+        updateProgressDisplay();
+        
+        transInput.value = "";
+        document.getElementById('note1Input').value = "";
+        document.getElementById('note2Input').value = "";
+        
+        recBtn.disabled = false;
+        redoBtn.disabled = true;
+        nextBtn.disabled = true;
+        hintMsg.style.display = "none";
+
+        if (sessionData.length >= TOTAL_SENTENCES) {
+            handleFinalExport();
+        } else {
+            loadCurrentSentence();
+        }
+    };
+    
+    async function handleFinalExport() {
+        recordingUI.style.display = "none";
+        document.getElementById('mainTitle').style.display = "none";
+        doneUI.style.display = "block";
+
+        const dateStr = getFormattedDate();
+        const zip = new JSZip();
+        let tsv = "Language\tSpeaker\tFile\tTake\tRevised_Text\tGloss\tTranslation\tNote 1\tNote 2\n";
+        
+        sessionData.forEach((item, i) => {
+            const index = String(i + 1).padStart(3, '0');
+            
+            item.takes.forEach((takeBlob, takeIdx) => {
+                const takeNum = takeIdx + 1;
+                const fileName = `${currentLang}_${currentSpeaker}_${dateStr}_item${index}_take${takeNum}`;
+                zip.file(`${fileName}.wav`, takeBlob);
+                tsv += `${currentLang}\t${currentSpeaker}\t${fileName}.wav\t${takeNum}\t${item.revisedText}\t${item.gloss}\t${item.trans}\t${item.note1}\t${item.note2}\n`;
+            });
+        });
+
+        zip.file(`Metadata_${currentLang}_${currentSpeaker}_${dateStr}.tsv`, tsv);
+        const content = await zip.generateAsync({type:"blob"});
+        
+        const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data.zip`;
+        generatedZipFile = new File([content], zipFileName, { type: 'application/zip' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = zipFileName;
+        link.click();
+
+        shareFileBtn.onclick = async () => {
+            if (navigator.canShare && navigator.canShare({ files: [generatedZipFile] })) {
+                try {
+                    await navigator.share({
+                        files: [generatedZipFile],
+                        title: 'Recording Data',
+                        text: 'Speech recording data package for zhang3435@wisc.edu'
+                    });
+                } catch (err) {
+                    console.log("Share cancelled or failed", err);
+                }
+            } else {
+                const mobLink = document.createElement('a');
+                mobLink.href = URL.createObjectURL(content);
+                mobLink.download = zipFileName;
+                mobLink.click();
+            }
+        };
+    }
+
+    document.getElementById('desktopManualUploadBtn').onclick = () => {
+        window.open(ONEDRIVE_LINK, '_blank');
+    };
+
+    document.getElementById('mobileOneDriveBtn').onclick = () => {
+        window.open(ONEDRIVE_LINK, '_blank');
+    };
+
+    function exportWAV(bufferList) {
+        const buffer = flatten(bufferList);
+        const wav = new ArrayBuffer(44 + buffer.length * 2);
+        const view = new DataView(wav);
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 32 + buffer.length * 2, true);
+        writeString(view, 8, 'WAVE');
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeString(view, 36, 'data');
+        view.setUint32(40, buffer.length * 2, true);
+        let offset = 44;
+        for (let i = 0; i < buffer.length; i++, offset += 2) {
+            let s = Math.max(-1, Math.min(1, buffer[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+        return new Blob([view], { type: 'audio/wav' });
+    }
+    function flatten(list) {
+        let len = list.reduce((a, b) => a + b.length, 0);
+        let res = new Float32Array(len);
+        let off = 0;
+        for (let b of list) { res.set(b, off); off += b.length; }
+        return res;
+    }
+    function writeString(v, o, s) {
+        for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
+    }
+</script>
+</body>
+</html>
