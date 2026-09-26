@@ -230,7 +230,6 @@
     let TOTAL_SENTENCES = 0;
 
     function getReferenceSentences() {
-        // Robust variable detection for stimuliData or string arrays
         if (typeof stimuliData !== 'undefined' && Array.isArray(stimuliData)) return stimuliData;
         if (typeof stimuli_revisetext !== 'undefined' && Array.isArray(stimuli_revisetext)) return stimuli_revisetext;
         if (typeof REFERENCE_SENTENCES !== 'undefined' && Array.isArray(REFERENCE_SENTENCES) && REFERENCE_SENTENCES.length > 0) return REFERENCE_SENTENCES;
@@ -273,21 +272,38 @@
             const rawItem = REFERENCE_SENTENCES[index];
             let sentenceText = "";
             let translationText = "";
+            let glossArray = [];
 
-            // Handle object { s: "...", en: "..." } structure
+            // Handle object structure { s: "...", en: "...", gloss: "..." }
             if (typeof rawItem === 'object' && rawItem !== null) {
                 sentenceText = rawItem.s || rawItem.text || rawItem.sentence || "";
                 translationText = rawItem.en || rawItem.trans || rawItem.translation || "";
+                
+                // Check if a gloss exists in the stimuli item
+                let rawGloss = rawItem.gloss || rawItem.g || "";
+                if (Array.isArray(rawGloss)) {
+                    glossArray = rawGloss;
+                } else if (typeof rawGloss === 'string' && rawGloss.trim() !== '') {
+                    // Split the gloss string ONLY by underscores so it aligns with the words and preserves internal spaces
+                    glossArray = rawGloss.trim().split(/_+/);
+                }
             } else if (typeof rawItem === 'string') {
                 sentenceText = rawItem;
             }
 
             targetInput.value = sentenceText;
             transInput.value = translationText;
+            
+            // Pre-load the parsed glosses into the input states before building the grid
+            savedGlosses = glossArray;
+            
+            // Clear the old HTML so it doesn't overwrite your new glosses!
+            glossContainer.innerHTML = '';
+            
             updateGlossGrid();
         }
     }
-
+    
     function updateGlossGrid() {
         const currentInputs = glossContainer.querySelectorAll('.gloss-input-cell');
         currentInputs.forEach((inp, idx) => {
