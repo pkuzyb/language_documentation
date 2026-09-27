@@ -26,9 +26,12 @@
         #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
         
         #experimentArea { display: none; margin-top: 20px; }
-        .display-card { background: #fafbfc; border: 2px solid #eef2f7; padding: 40px 20px; margin: 20px 0; border-radius: 15px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; }
+        .display-card { background: #fafbfc; border: 2px solid #eef2f7; padding: 40px 20px; margin: 20px 0; border-radius: 15px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; position: relative; }
         #stimuliText { font-size: 2.2rem; font-weight: bold; margin-bottom: 15px; line-height: 1.5; color: #111; }
         #translationText { color: #666; font-style: italic; font-size: 1.2rem; border-top: 1px solid #eee; padding-top: 15px; }
+
+        /* CHANGED: display: none to display: block so it constantly reserves space */
+        #waveformCanvas { display: block; width: 100%; height: 80px; background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-top: 15px; box-sizing: border-box; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
         button { padding: 15px 20px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 200px; }
@@ -47,8 +50,15 @@
         #redoTakeBtn { background: #f2994a; color: white; }
         #redoTakeBtn:disabled { background: #eee; color: #aaa; cursor: default; }
 
+        #playTakeBtn { background: #9c27b0; color: white; }
+        #playTakeBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
         .progress-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #555; }
         #hintMsg { color: #34a853; font-size: 0.85em; margin-top: 15px; display: none; font-weight: bold; }
+
+        #intermediateScreen { display: none; padding: 30px; text-align: center; }
+        .intermediate-box { background: #e8f0fe; padding: 25px; border-radius: 12px; border: 2px solid #1a73e8; margin-top: 20px; text-align: left; }
+        #continueSessionBtn { background: #34a853; color: white; margin-top: 25px; max-width: 320px; }
 
         #doneScreen { display: none; padding: 20px 10px; }
         .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
@@ -78,11 +88,10 @@
 <div class="container">
     <h1 id="mainTitle">Speech data task</h1>
 
-    <!-- Step 1: Speaker Info -->
     <div id="setupInterface" class="speaker-box">
         <div class="field-group">
             <label>Language</label>
-            <input type="text" id="speakerLang" placeholder="e.g., Mandarin">
+            <input type="text" id="speakerLang" placeholder="e.g., English">
         </div>
         <div class="field-group">
             <label>Speaker Name</label>
@@ -108,7 +117,6 @@
         <button id="startSessionBtn" style="margin-top:10px;">Start Session</button>
     </div>
 
-    <!-- Step 2: Loudness/Mic Check Screen -->
     <div id="micCheckInterface">
         <h3>🎙 Audio Check</h3>
         <p style="font-size: 0.85em; color: #666;">Please speak into the mic to test your volume level.</p>
@@ -119,7 +127,6 @@
         <button id="confirmMicBtn" disabled>Proceed</button>
     </div>
 
-    <!-- Step 3: Recording Interface -->
     <div id="experimentArea">
         <div class="progress-info">
             <span>Speaker: <b id="displayName"></b></span>
@@ -129,23 +136,37 @@
         <div class="display-card">
             <div id="stimuliText"></div>
             <div id="translationText"></div>
+            <canvas id="waveformCanvas"></canvas>
         </div>
 
         <div class="btn-group">
             <button id="recBtn">Start Recording (Take 1 / 2)</button>
             <button id="nextBtn" disabled>Save & Next</button>
             <button id="redoTakeBtn" disabled>Redo Last Take</button>
+            <button id="playTakeBtn" disabled>Play Last Take</button>
         </div>
         <p id="hintMsg">✔ Both takes complete! Click "Save & Next" to continue.</p>
     </div>
 
-    <!-- Step 4: Final Screen -->
+    <div id="intermediateScreen">
+        <h2 style="color: #1a73e8;">Great job! You finished 50 sentences.</h2>
+        <div class="intermediate-box">
+            <strong>✅ Progress Saved!</strong><br><br>
+            A ZIP file containing your last 50 recordings has just downloaded to your device automatically. 
+            <br><br>
+            <b>Instructions:</b> Please keep this ZIP file safe. You will upload all of your downloaded chunks to OneDrive at the very end of the experiment.
+            <br><br>
+            <i>Feel free to take a sip of water or a short break. When you are ready, click below to resume.</i>
+        </div>
+        <button id="continueSessionBtn">Continue Session</button>
+    </div>
+
     <div id="doneScreen">
         <div class="done-text">ALL DONE! / 完成！</div>
         
         <div id="desktopDoneView">
             <div class="upload-box">
-                <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
+                <strong>Next Step:</strong> Your <b>Final</b> ZIP file has downloaded. Please select ALL the ZIP files you downloaded today from your <b>Downloads</b> folder and upload them to the OneDrive window that opened.
             </div>
             <button id="desktopManualUploadBtn" style="background: #1a73e8; color: white;">Open OneDrive Upload</button>
             <br>
@@ -155,6 +176,7 @@
         <div id="mobileDoneView">
             <div class="upload-box">
                 <strong>Submission Options:</strong><br>
+                Please ensure you upload/share ALL the ZIP chunks downloaded during this session.<br><br>
                 1. Upload directly from your phone to OneDrive folder.<br>
                 2. Or Share via App/Email (writes to: <b>zhang3435@wisc.edu</b>)
             </div>
@@ -174,22 +196,28 @@
     let audioContext, stream, processor, audioData = [], currentItemTakes = [], results = [];
     let currentSpeaker = "", currentLang = "";
     let checkAnimationId;
+    let activePlaybackSource = null;
+    let combinedLastTakeData = null;
     const sampleRate = 44100;
     let generatedZipFile = null;
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
     const recordingUI = document.getElementById('experimentArea');
+    const intermediateUI = document.getElementById('intermediateScreen');
     const doneUI = document.getElementById('doneScreen');
+    const waveformCanvas = document.getElementById('waveformCanvas');
     
     const recBtn = document.getElementById('recBtn');
     const nextBtn = document.getElementById('nextBtn');
     const redoTakeBtn = document.getElementById('redoTakeBtn');
+    const playTakeBtn = document.getElementById('playTakeBtn');
     const hintMsg = document.getElementById('hintMsg');
     const volumeBar = document.getElementById('volumeBar');
     const volumeStatus = document.getElementById('volumeStatus');
     const confirmMicBtn = document.getElementById('confirmMicBtn');
     const shareFileBtn = document.getElementById('shareFileBtn');
+    const continueSessionBtn = document.getElementById('continueSessionBtn');
 
     function getFormattedDate() {
         const d = new Date();
@@ -287,10 +315,77 @@
         showTrial();
     };
 
+    function stopPlayback() {
+        if (activePlaybackSource) {
+            try { activePlaybackSource.stop(); } catch (e) {}
+            activePlaybackSource = null;
+        }
+    }
+
+    // CHANGED: Added function to clear waveform and draw neutral line
+    function clearWaveform() {
+        if (waveformCanvas.offsetWidth > 0) {
+            waveformCanvas.width = waveformCanvas.offsetWidth;
+            waveformCanvas.height = waveformCanvas.offsetHeight;
+        } else {
+            waveformCanvas.width = 800; // fallback width
+            waveformCanvas.height = 80; // fallback height
+        }
+        
+        const ctx = waveformCanvas.getContext('2d');
+        ctx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        
+        // Draw a neutral center line to indicate readiness
+        ctx.beginPath();
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        ctx.moveTo(0, waveformCanvas.height / 2);
+        ctx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+        ctx.stroke();
+    }
+
+    function drawWaveform(pcmData) {
+        // CHANGED: Removed waveformCanvas.style.display = 'block'; because it's managed via CSS now
+        waveformCanvas.width = waveformCanvas.offsetWidth;
+        waveformCanvas.height = waveformCanvas.offsetHeight;
+        
+        const ctx = waveformCanvas.getContext('2d');
+        const width = waveformCanvas.width;
+        const height = waveformCanvas.height;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#1a73e8';
+        ctx.beginPath();
+        
+        const step = Math.ceil(pcmData.length / width);
+        const amp = height / 2;
+        
+        for (let i = 0; i < width; i++) {
+            let min = 1.0;
+            let max = -1.0;
+            for (let j = 0; j < step; j++) {
+                const datum = pcmData[(i * step) + j];
+                if (datum < min) min = datum;
+                if (datum > max) max = datum;
+            }
+            ctx.moveTo(i, (1 + min) * amp);
+            ctx.lineTo(i, (1 + max) * amp);
+        }
+        ctx.stroke();
+    }
+
     function showTrial() {
+        stopPlayback();
         const item = stimuliData[currentIndex];
         currentTake = 1;
         currentItemTakes = [];
+        
+        // CHANGED: Draw empty waveform line instead of hiding the canvas
+        clearWaveform();
+        
+        combinedLastTakeData = null;
         
         document.getElementById('stimuliText').innerText = item.s;
         document.getElementById('translationText').innerText = item.en || item.t;
@@ -301,32 +396,79 @@
         recBtn.classList.remove('active');
         nextBtn.disabled = true;
         redoTakeBtn.disabled = true;
+        playTakeBtn.disabled = true;
         hintMsg.style.display = "none";
     }
 
     recBtn.onclick = async () => {
+        stopPlayback();
+        
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
         if (recBtn.innerText.startsWith("Start Recording")) {
-            audioData = [];
-            const source = audioContext.createMediaStreamSource(stream);
-            processor = audioContext.createScriptProcessor(4096, 1, 1);
-            processor.onaudioprocess = e => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
-            source.connect(processor);
-            processor.connect(audioContext.destination);
+            // Disable button briefly to prevent multi-clicking while the buffer runs
+            recBtn.disabled = true;
+            
+            // 100ms buffer delay for START
+            setTimeout(() => {
+                audioData = [];
+                clearWaveform();
+                
+                const source = audioContext.createMediaStreamSource(stream);
+                processor = audioContext.createScriptProcessor(4096, 1, 1);
+                processor.onaudioprocess = e => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                source.connect(processor);
+                processor.connect(audioContext.destination);
 
-            recBtn.innerText = `Stop Recording (Take ${currentTake} / ${totalTakes})`;
-            recBtn.classList.add('active');
-            nextBtn.disabled = true;
-            redoTakeBtn.disabled = true;
-            hintMsg.style.display = "none";
+                recBtn.innerText = `Stop Recording (Take ${currentTake} / ${totalTakes})`;
+                recBtn.classList.add('active');
+                nextBtn.disabled = true;
+                redoTakeBtn.disabled = true;
+                playTakeBtn.disabled = true;
+                hintMsg.style.display = "none";
+                recBtn.disabled = false; // Re-enable button so they can stop
+            }, 100);
+
         } else {
-            processor.disconnect();
-            currentItemTakes.push([...audioData]);
+            // Disable button briefly 
+            recBtn.disabled = true;
             recBtn.classList.remove('active');
+
+            // Instantly disconnect the processor
+            processor.disconnect();
+
+            // Cut final 100ms to avoid capturing the button click sound
+            const samplesToRemove = Math.floor(sampleRate * 0.100); // 100ms
+            let samplesRemoved = 0;
+            
+            while (audioData.length > 0 && samplesRemoved < samplesToRemove) {
+                const lastChunk = audioData[audioData.length - 1];
+                if (samplesRemoved + lastChunk.length <= samplesToRemove) {
+                    samplesRemoved += lastChunk.length;
+                    audioData.pop(); // Remove entire chunk
+                } else {
+                    const diff = samplesToRemove - samplesRemoved;
+                    audioData[audioData.length - 1] = lastChunk.slice(0, lastChunk.length - diff);
+                    samplesRemoved = samplesToRemove;
+                    break;
+                }
+            }
+
+            currentItemTakes.push([...audioData]);
+
+            let totalLen = audioData.reduce((acc, curr) => acc + curr.length, 0);
+            combinedLastTakeData = new Float32Array(totalLen);
+            let offset = 0;
+            for (let chunk of audioData) {
+                combinedLastTakeData.set(chunk, offset);
+                offset += chunk.length;
+            }
+            
+            drawWaveform(combinedLastTakeData);
+            playTakeBtn.disabled = false;
 
             if (currentTake < totalTakes) {
                 currentTake++;
@@ -345,7 +487,21 @@
         }
     };
 
+    playTakeBtn.onclick = () => {
+        stopPlayback();
+        if (!combinedLastTakeData || !audioContext) return;
+        
+        const audioBuffer = audioContext.createBuffer(1, combinedLastTakeData.length, sampleRate);
+        audioBuffer.getChannelData(0).set(combinedLastTakeData);
+        
+        activePlaybackSource = audioContext.createBufferSource();
+        activePlaybackSource.buffer = audioBuffer;
+        activePlaybackSource.connect(audioContext.destination);
+        activePlaybackSource.start();
+    };
+
     redoTakeBtn.onclick = () => {
+        stopPlayback();
         if (processor) {
             try { processor.disconnect(); } catch (e) {}
         }
@@ -356,16 +512,22 @@
 
         currentTake = currentItemTakes.length + 1;
         audioData = [];
+        combinedLastTakeData = null;
+        
+        // CHANGED: Draw empty waveform line instead of hiding the canvas
+        clearWaveform();
 
         recBtn.innerText = `Start Recording (Take ${currentTake} / ${totalTakes})`;
         recBtn.classList.remove('active');
         recBtn.disabled = false;
         nextBtn.disabled = true;
         redoTakeBtn.disabled = (currentItemTakes.length === 0);
+        playTakeBtn.disabled = true;
         hintMsg.style.display = "none";
     };
 
-    nextBtn.onclick = () => {
+    nextBtn.onclick = async () => {
+        stopPlayback();
         currentItemTakes.forEach((takeData, idx) => {
             results.push({ 
                 itemNum: currentIndex + 1,
@@ -379,17 +541,27 @@
         currentIndex++;
         
         if (currentIndex < stimuliData.length) {
-            showTrial();
+            if (currentIndex % 50 === 0) {
+                await generateAndDownloadZip(false);
+                results = []; 
+                
+                recordingUI.style.display = "none";
+                intermediateUI.style.display = "block";
+            } else {
+                showTrial();
+            }
         } else {
             handleFinalExport();
         }
     };
 
-    async function handleFinalExport() {
-        recordingUI.style.display = "none";
-        document.getElementById('mainTitle').style.display = "none";
-        doneUI.style.display = "block";
+    continueSessionBtn.onclick = () => {
+        intermediateUI.style.display = "none";
+        recordingUI.style.display = "block";
+        showTrial();
+    };
 
+    async function generateAndDownloadZip(isFinal) {
         const zip = new JSZip();
         const dateStr = getFormattedDate(); 
         
@@ -403,16 +575,30 @@
             tsv += `${currentLang}\t${currentSpeaker}\t${dateStr}\t${r.itemNum}\t${r.takeNum}\t${fileName}\t${r.s}\t${r.t}\n`;
         });
         
-        zip.file(`Metadata_${currentLang}_${currentSpeaker}_${dateStr}.tsv`, tsv);
+        const chunkSuffix = isFinal ? "Final" : `Chunk_${Math.ceil(currentIndex / 50)}`;
+        const metadataName = `Metadata_${currentLang}_${currentSpeaker}_${dateStr}_${chunkSuffix}.tsv`;
+        
+        zip.file(metadataName, tsv);
         const blob = await zip.generateAsync({type:"blob"});
         
-        const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data.zip`;
-        generatedZipFile = new File([blob], zipFileName, { type: 'application/zip' });
+        const zipFileName = `${currentLang}_${currentSpeaker}_${dateStr}_Data_${chunkSuffix}.zip`;
+        
+        if (isFinal) {
+            generatedZipFile = new File([blob], zipFileName, { type: 'application/zip' });
+        }
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = zipFileName;
         link.click();
+    }
+
+    async function handleFinalExport() {
+        recordingUI.style.display = "none";
+        document.getElementById('mainTitle').style.display = "none";
+        doneUI.style.display = "block";
+
+        await generateAndDownloadZip(true);
         
         window.open(ONEDRIVE_LINK, '_blank');
 
@@ -421,17 +607,14 @@
                 try {
                     await navigator.share({
                         files: [generatedZipFile],
-                        title: 'Recording Data',
+                        title: 'Recording Data (Final Chunk)',
                         text: 'Speech recording data package for zhang3435@wisc.edu'
                     });
                 } catch (err) {
                     console.log("Share cancelled or failed", err);
                 }
             } else {
-                const mobLink = document.createElement('a');
-                mobLink.href = URL.createObjectURL(blob);
-                mobLink.download = zipFileName;
-                mobLink.click();
+                alert("Mobile sharing API not supported. Please upload directly from your downloads folder.");
             }
         };
     }

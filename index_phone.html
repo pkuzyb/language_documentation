@@ -25,6 +25,9 @@
         #volumeStatus { font-weight: bold; margin-top: 10px; font-size: 0.95em; }
         
         #recordingInterface { display: none; margin-top: 20px; }
+        
+        .header-info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.95rem; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #eee; }
+
         .target-lang { height: 70px; font-size: 1.1rem; border-left: 5px solid #1a73e8; resize: vertical; }
         .trans-lang { height: 60px; font-style: italic; }
 
@@ -65,13 +68,17 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             width: 100%;
+            box-sizing: border-box;
         }
 
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
-        button { padding: 15px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; max-width: 250px; }
+        #waveformCanvas { width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; display: block; margin-bottom: 15px; box-sizing: border-box; }
 
-        #startSessionBtn { background: #1a73e8; color: white; }
-        #confirmMicBtn { background: #34a853; color: white; margin-top: 15px; }
+        /* Ensure buttons stay on one row */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; justify-content: space-between; flex-wrap: nowrap; width: 100%; }
+        .btn-group button { flex: 1; padding: 12px 2px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        #startSessionBtn { background: #1a73e8; color: white; width: 100%; max-width: 250px; padding: 15px; }
+        #confirmMicBtn { background: #34a853; color: white; margin-top: 15px; width: 100%; max-width: 250px; padding: 15px; border: none; border-radius: 8px; font-weight: bold; }
         #confirmMicBtn:disabled { background: #ccc; cursor: not-allowed; }
         
         #recBtn { background: #ea4335; color: white; }
@@ -84,6 +91,9 @@
         #nextBtn { background: #1a73e8; color: white; }
         #nextBtn:disabled { background: #eee; color: #aaa; cursor: default; }
 
+        #playBtn { background: #9c27b0; color: white; }
+        #playBtn:disabled { background: #eee; color: #aaa; cursor: default; }
+
         #doneScreen { display: none; padding: 20px 10px; }
         .done-text { font-size: 1.8rem; color: #34a853; font-weight: 800; margin-bottom: 15px; }
         .upload-box { background: #fff9db; padding: 20px; border-radius: 10px; border: 2px solid #fcc419; margin: 20px 0; text-align: left; font-size: 0.9rem;}
@@ -92,15 +102,15 @@
         #mobileDoneView { display: none; }
 
         .final-btn-stack { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-top: 20px; }
-        .final-btn-stack button { max-width: 100%; width: 100%; }
+        .final-btn-stack button { max-width: 100%; width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: bold; }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         @media (max-width: 600px) {
             body { padding: 10px; }
             .container { padding: 20px 15px; }
-            .btn-group { flex-direction: column; align-items: center; gap: 10px; }
-            button { max-width: 100%; }
+            .btn-group { gap: 5px; }
+            .btn-group button { padding: 12px 1px; font-size: 0.7rem; } /* Shrink font to fit 4 buttons on mobile */
 
             #desktopDoneView { display: none; }
             #mobileDoneView { display: block; }
@@ -154,7 +164,10 @@
 
     <!-- Step 3: Recording Interface -->
     <div id="recordingInterface">
-        <div style="margin-bottom: 20px; font-size: 0.9rem;">Speaker: <b id="displayName"></b> <br> Progress: <b id="count">0</b> / <span id="totalDisplay"></span></div>
+        <div class="header-info-row">
+            <div>Speaker: <b id="displayName"></b></div>
+            <div>Progress: <b id="count">0</b> / <span id="totalDisplay"></span></div>
+        </div>
 
         <div class="field-group">
             <label>Sentence (separate words with spaces)</label>
@@ -179,12 +192,19 @@
             <textarea id="note2Input" class="trans-lang" placeholder="Type optional notes 2 here..."></textarea>
         </div>
 
+        <!-- Static Waveform Display (Always visible) -->
+        <canvas id="waveformCanvas" width="800" height="100"></canvas>
+
+        <!-- Buttons forced into ONE row via Flexbox -->
         <div class="btn-group">
-            <button id="recBtn">Start Recording (Take 1 of 4)</button>
+            <button id="recBtn">Record (1/4)</button>
             <button id="nextBtn" disabled>Save & Next</button>
-            <button id="redoBtn" disabled>Redo Last Take</button>
+            <button id="redoBtn" disabled>Redo Last</button>
+            <button id="playBtn" disabled>Play Last</button>
         </div>
-        <p id="hintMsg" style="color: #ea4335; font-size: 0.85em; margin-top: 15px; display: none;">
+        
+        <!-- Hint message moved below the buttons and centered -->
+        <p id="hintMsg" style="color: #ea4335; font-size: 0.95em; margin-top: 15px; text-align: center; display: none;">
             ⚠ Record 4 takes before clicking "Save & Next".
         </p>
     </div>
@@ -197,9 +217,9 @@
             <div class="upload-box">
                 <strong>Next Step:</strong> Your ZIP file has downloaded. Please select it from your <b>Downloads</b> folder and upload it to the OneDrive window that opened.
             </div>
-            <button id="desktopManualUploadBtn" style="background: #1a73e8; color: white;">Open OneDrive Upload</button>
+            <button id="desktopManualUploadBtn" style="background: #1a73e8; color: white; padding: 15px; border:none; border-radius: 8px;">Open OneDrive Upload</button>
             <br>
-            <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px;">Start New Session</button>
+            <button onclick="location.reload()" style="background:#eee; color: #333; margin-top: 20px; padding: 15px; border:none; border-radius: 8px;">Start New Session</button>
         </div>
 
         <div id="mobileDoneView">
@@ -232,6 +252,7 @@
 
     let currentSentenceTakes = [];
     let savedGlosses = [];
+    let isRecordingActive = false; // NEW FLAG FOR START DELAY
 
     const setupUI = document.getElementById('setupInterface');
     const micCheckUI = document.getElementById('micCheckInterface');
@@ -240,11 +261,13 @@
     const recBtn = document.getElementById('recBtn');
     const redoBtn = document.getElementById('redoBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const playBtn = document.getElementById('playBtn');
     const hintMsg = document.getElementById('hintMsg');
     const volumeBar = document.getElementById('volumeBar');
     const volumeStatus = document.getElementById('volumeStatus');
     const confirmMicBtn = document.getElementById('confirmMicBtn');
     const shareFileBtn = document.getElementById('shareFileBtn');
+    const waveformCanvas = document.getElementById('waveformCanvas');
 
     const targetInput = document.getElementById('targetInput');
     const glossContainer = document.getElementById('glossContainer');
@@ -301,6 +324,21 @@
         const minutes = String(d.getMinutes()).padStart(2, '0');
         return `${year}-${month}-${day}_${hours}-${minutes}`;
     }
+
+    // Function to draw an empty flat line on the waveform canvas
+    function clearWaveform() {
+        const ctx = waveformCanvas.getContext('2d');
+        ctx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.beginPath();
+        ctx.moveTo(0, waveformCanvas.height / 2);
+        ctx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+        ctx.stroke();
+    }
+
+    // Run this immediately so the empty canvas shows the baseline
+    clearWaveform();
 
     document.getElementById('startSessionBtn').onclick = async () => {
         const lang = document.getElementById('speakerLang').value.trim();
@@ -383,10 +421,47 @@
         const takeNum = currentSentenceTakes.length + 1;
         
         if (currentSentenceTakes.length < REQUIRED_TAKES) {
-            recBtn.textContent = `Start Recording (Take ${takeNum} of ${REQUIRED_TAKES})`;
+            recBtn.textContent = `Record (${takeNum}/${REQUIRED_TAKES})`;
         }
 
         redoBtn.disabled = (currentSentenceTakes.length === 0);
+        playBtn.disabled = (currentSentenceTakes.length === 0);
+    }
+
+    function drawStaticWaveform(bufferList) {
+        const ctx = waveformCanvas.getContext('2d');
+        const buffer = flatten(bufferList);
+        
+        ctx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+        
+        // Draw center line
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.beginPath();
+        ctx.moveTo(0, waveformCanvas.height / 2);
+        ctx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#1a73e8';
+        ctx.beginPath();
+        
+        const step = Math.ceil(buffer.length / waveformCanvas.width);
+        for(let i = 0; i < waveformCanvas.width; i++) {
+            let min = 1.0;
+            let max = -1.0;
+            for (let j = 0; j < step; j++) {
+                const val = buffer[(i * step) + j];
+                if (val < min) min = val;
+                if (val > max) max = val;
+            }
+            
+            const yMin = (1 - min) / 2 * waveformCanvas.height;
+            const yMax = (1 - max) / 2 * waveformCanvas.height;
+            
+            ctx.moveTo(i, yMin);
+            ctx.lineTo(i, yMax);
+        }
+        ctx.stroke();
     }
 
     recBtn.onclick = async () => {
@@ -395,38 +470,71 @@
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         }
 
-        if (recBtn.textContent.startsWith("Start Recording")) {
+        if (recBtn.textContent.startsWith("Record")) {
+            // Clear canvas when starting a new take
+            clearWaveform();
+            
             audioData = [];
+            isRecordingActive = false; // Start inactive to buffer initial click
+            
             input = audioContext.createMediaStreamSource(stream);
             processor = audioContext.createScriptProcessor(4096, 1, 1);
-            processor.onaudioprocess = (e) => audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+            processor.onaudioprocess = (e) => {
+                // Only save data if 100ms has passed
+                if (isRecordingActive) {
+                    audioData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                }
+            };
             input.connect(processor);
             processor.connect(audioContext.destination);
-            recBtn.textContent = `Stop Recording (Take ${currentSentenceTakes.length + 1})`;
+            
+            recBtn.textContent = `Stop Take ${currentSentenceTakes.length + 1}`;
             recBtn.classList.add('active');
             nextBtn.disabled = true;
             redoBtn.disabled = true;
+            playBtn.disabled = true;
             hintMsg.style.display = "none";
+            
+            // Wait 100ms before actually recording audio data
+            setTimeout(() => {
+                isRecordingActive = true;
+            }, 100);
+
         } else {
+            isRecordingActive = false;
             processor.disconnect();
             input.disconnect();
             
-            currentSentenceTakes.push(exportWAV(audioData));
+            // TRIMMING THE LAST 100MS TO REMOVE STOP CLICK
+            let flatData = flatten(audioData);
+            const trimSamples = Math.floor(sampleRate * 0.100); // 100ms of samples
+            
+            if (flatData.length > trimSamples) {
+                flatData = flatData.slice(0, flatData.length - trimSamples);
+            } else {
+                flatData = new Float32Array(0); // Failsafe if recording was less than 100ms
+            }
+
+            // Push trimmed audio buffer
+            currentSentenceTakes.push(exportWAV([flatData]));
             recBtn.classList.remove('active');
+            
+            drawStaticWaveform([flatData]);
 
             if (currentSentenceTakes.length < REQUIRED_TAKES) {
                 recBtn.disabled = false;
                 nextBtn.disabled = true;
                 updateProgressDisplay();
                 hintMsg.style.display = "block";
-                hintMsg.textContent = `⚠ Take ${currentSentenceTakes.length} saved. Click button above to record Take ${currentSentenceTakes.length + 1}.`;
+                hintMsg.textContent = `⚠ Take ${currentSentenceTakes.length} saved. Click 'Record' for Take ${currentSentenceTakes.length + 1}.`;
             } else {
                 recBtn.disabled = true;
                 nextBtn.disabled = false;
                 redoBtn.disabled = false;
-                recBtn.textContent = `${REQUIRED_TAKES} Takes Recorded ✓`;
+                playBtn.disabled = false;
+                recBtn.textContent = `${REQUIRED_TAKES} Takes ✓`;
                 hintMsg.style.display = "block";
-                hintMsg.textContent = `⚠ ${REQUIRED_TAKES} takes complete! Click 'Save & Next' to continue.`;
+                hintMsg.textContent = `⚠ ${REQUIRED_TAKES} takes complete! Click 'Save & Next'.`;
             }
         }
     };
@@ -436,6 +544,7 @@
             currentSentenceTakes.pop();
             recBtn.disabled = false;
             nextBtn.disabled = true;
+            clearWaveform(); // Reset the canvas line
             updateProgressDisplay();
 
             if (currentSentenceTakes.length === 0) {
@@ -444,6 +553,15 @@
                 hintMsg.style.display = "block";
                 hintMsg.textContent = `⚠ Last take discarded. Ready to record Take ${currentSentenceTakes.length + 1}.`;
             }
+        }
+    };
+
+    playBtn.onclick = () => {
+        if (currentSentenceTakes.length > 0) {
+            const lastBlob = currentSentenceTakes[currentSentenceTakes.length - 1];
+            const audioUrl = URL.createObjectURL(lastBlob);
+            const audio = new Audio(audioUrl);
+            audio.play();
         }
     };
 
@@ -456,7 +574,6 @@
 
         const glossCells = Array.from(glossContainer.querySelectorAll('.gloss-input-cell'));
         
-        // Joined by '_' across gloss boxes. Internal underscores in a single box are converted to '-' to preserve strict '_' delimitations.
         const combinedGloss = glossCells.map(cell => {
             let val = cell.value.trim().replace(/\s+/g, ' ').replace(/_/g, '-');
             return val || '*';
@@ -484,6 +601,8 @@
         recBtn.disabled = false;
         redoBtn.disabled = true;
         nextBtn.disabled = true;
+        playBtn.disabled = true;
+        clearWaveform(); // Reset canvas for the next sentence
         hintMsg.style.display = "none";
 
         if (sessionData.length >= TOTAL_SENTENCES) {
@@ -574,6 +693,7 @@
         }
         return new Blob([view], { type: 'audio/wav' });
     }
+    
     function flatten(list) {
         let len = list.reduce((a, b) => a + b.length, 0);
         let res = new Float32Array(len);
@@ -581,6 +701,7 @@
         for (let b of list) { res.set(b, off); off += b.length; }
         return res;
     }
+    
     function writeString(v, o, s) {
         for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i));
     }
