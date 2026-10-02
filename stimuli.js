@@ -44,40 +44,40 @@ const stimuliData = [
     { s: "ཆརཔ་རྐྱབ་འཚར་ནུག།", en: "It has stopped raining." },
     { s: "ཆརཔ་རྐྱབ་འཚར་ནུག?", en: "It has stopped raining?" },
     
-    // Pair 12
-    { s: "ཁོ་མི་འོང་ལོ།", en: "He will not come, it is said." },
-    { s: "ཁོ་མི་འོང་ལོ?", en: "He will not come, it is said?" },
+    // Pair 12 (Revised to match f0_data)
+    { s: "ཁོ་མི་འོང་ལོ།", en: "He said he wont come / make it." },
+    { s: "ཁོ་མི་འོང་ལོ?", en: "He said he wont come / make it?" },
     
-    // Pair 13
-    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག།", en: "The plane landed at the airport." },
-    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག?", en: "The plane landed at the airport?" },
+    // Pair 13 (Revised to match f0_data)
+    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག།", en: "The plane has landed on the ground." },
+    { s: "གནམ་གྲུ་ཐང་ནང་ཆགས་ནུག?", en: "The plane has landed on the ground?" },
     
-    // Pair 14
-    { s: "ཁོ་གཟུགས་རིམ་ཡོད།", en: "He has a good physique." },
-    { s: "ཁོ་གཟུགས་རིམ་ཡོད?", en: "He has a good physique?" },
+    // Pair 14 (Revised to match f0_data)
+    { s: "ཁོ་གཟུགས་རིམ་ཡོད།", en: "He is tall." },
+    { s: "ཁོ་གཟུགས་རིམ་ཡོད?", en: "He is tall?" },
     
-    // Pair 15
-    { s: "ང་ལྟོ་བཟའ་ནི།", en: "I am going to eat." },
-    { s: "ང་ལྟོ་བཟའ་ནི?", en: "I am going to eat?" },
+    // Pair 15 (Revised to match f0_data)
+    { s: "ང་ལྟོ་བཟའ་ནི།", en: "I want to eat." },
+    { s: "ང་ལྟོ་བཟའ་ནི?", en: "I want to eat?" },
     
     // Pair 16
     { s: "མོ་གནམ་མེད་ས་མེད་འཛའ་རིམ་འདུག།", en: "She is extremely beautiful." },
     { s: "མོ་གནམ་མེད་ས་མེད་འཛའ་རིམ་འདུག?", en: "She is extremely beautiful?" },
     
-    // Pair 17
-    { s: "ཁྱོད་འབྲུག་མི་ཨིན།", en: "You are Bhutanese." },
-    { s: "ཁྱོད་འབྲུག་མི་ཨིན?", en: "You are Bhutanese?" },
+    // Pair 17 (Revised to match f0_data)
+    { s: "ཁྱོད་འབྲུག་མི་ཨིན།", en: "I am Bhutanese" },
+    { s: "ཁྱོད་འབྲུག་མི་ཨིན?", en: "I am Bhutanese" },
     
-    // Pair 18
-    { s: "ཕར་ལུ་མི་འདུག།", en: "There is no one over there." },
-    { s: "ཕར་ལུ་མི་འདུག?", en: "There is no one over there?" },
+    // Pair 18 (Revised to match f0_data)
+    { s: "ཕར་ལུ་མི་འདུག།", en: "There are people over there." },
+    { s: "ཕར་ལུ་མི་འདུག?", en: "There are people over there?" },
     
-    // Pair 19
-    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག།", en: "The dried beef smells tasty." },
-    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག?", en: "The dried beef smells tasty?" },
+    // Pair 19 (Revised to match f0_data)
+    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག།", en: "The dried beef has a weird smell." },
+    { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག?", en: "The dried beef has a weird smell?" },
     
-    // Pair 20
-    { s: "བོད་སྲེམ་མི་ཞིམ་མས།", en: "Soya beans don't taste good" },
+    // Pair 20 (Revised to match f0_data)
+    { s: "བོད་སྲེམ་མི་ཞིམ་མས།", en: "Soya beans don't taste good." },
     { s: "བོད་སྲེམ་མི་ཞིམ་མས?", en: "Soya beans don't taste good?" },
 
     // --- Paired New Sentences (20 Pairs / 40 Sentences) ---
@@ -109,9 +109,9 @@ const stimuliData = [
     { s: "དགུན་ལུ་ཆརཔ་མི་རྐྱབ།", en: "It does not rain in winter." },
     { s: "དགུན་ལུ་ཆརཔ་མི་རྐྱབ?", en: "It does not rain in winter?" },
 
-    // Pair 28
-    { s: "ན་ཧིང་ཆུ་རུས་མ་འཐེན།", en: "Last year, it did not flood." },
-    { s: "ན་ཧིང་ཆུ་རུས་མ་འཐེན?", en: "Last year, it did not flood?" },
+    // Pair 28 (Revised to match f0_data)
+    { s: "ན་ཧིང་ཆུ་རུས་མ་འཐེན།", en: "Last year, it did not rain." },
+    { s: "ན་ཧིང་ཆུ་རུས་མ་འཐེན?", en: "Last year, it did not rain?" },
 
     // Pair 29
     { s: "དུས་རྩི་གནམ་མེད་ས་མེད་ཚདཔ་འདུག།", en: "It is extremely hot this year." },
