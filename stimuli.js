@@ -77,8 +77,8 @@ const stimuliData = [
     { s: "ནོར་ཤ་སྐམ་དྲིམ་འདུག?", en: "The dried beef smells tasty?" },
     
     // Pair 20
-    { s: "བོད་སྲེམ་མི་ཞིམ་མས།", en: "The dish is not delicious." },
-    { s: "བོད་སྲེམ་མི་ཞིམ་མས?", en: "The dish is not delicious?" },
+    { s: "བོད་སྲེམ་མི་ཞིམ་མས།", en: "Soya beans don't taste good" },
+    { s: "བོད་སྲེམ་མི་ཞིམ་མས?", en: "Soya beans don't taste good?" },
 
     // --- Paired New Sentences (20 Pairs / 40 Sentences) ---
     // Pair 21
